@@ -27,9 +27,12 @@ This app uses the following dependencies:
 - `openpyxl`
 - `numpy`
 
-These are all listed in the `pyproject.toml` file.
+These are all listed in the `requirements.txt` file.
 
 ---
+## Global Setup 
+Visit the link below:
+`https://dataanalysischatbot-b6w6rvxzqfdaqp9ufaunrt.streamlit.app/`
 
 ## Local Setup
 
