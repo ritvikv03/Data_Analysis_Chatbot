@@ -32,7 +32,7 @@ These are all listed in the `requirements.txt` file.
 ---
 ## Global Setup 
 Visit the link below:
-`https://dataanalysischatbot-b6w6rvxzqfdaqp9ufaunrt.streamlit.app/`
+`https://data-analytics-chatbot-rv.streamlit.app/`
 
 ## Local Setup
 
