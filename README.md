@@ -35,9 +35,15 @@ These are all listed in the `pyproject.toml` file.
 
 ### Clone this repository
 ```bash
-1) git clone https://github.com/<your-username>/data-analytics-chatbot.git
-2) cd data-analytics-chatbot
-3) pip install streamlit google-generativeai pdfplumber pandas python-docx openpyxl numpy
-4) streamlit run chatbot.py
-
+git clone https://github.com/<your-username>/data-analytics-chatbot.git
+```
+```bash
+cd data-analytics-chatbot
+```
+```bash
+pip install streamlit google-generativeai pdfplumber pandas python-docx openpyxl numpy
+```
+```bash
+ streamlit run chatbot.py
+```
 
