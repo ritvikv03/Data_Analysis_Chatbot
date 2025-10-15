@@ -1,12 +1,13 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "data-analytics-chatbot"
 version = "0.1.0"
 description = "A Streamlit app that helps analyze data and explain analytics concepts using Gemini AI"
 readme = "README.md"
 requires-python = ">=3.9"
-authors = [
-    { name = "Ritvik Vasikarla" }
-]
 dependencies = [
     "streamlit",
     "google-generativeai",
@@ -17,10 +18,3 @@ dependencies = [
     "numpy"
 ]
 
-[tool.streamlit]
-server.port = 8501
-server.headless = true
-
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
