@@ -35,7 +35,7 @@ These are all listed in the `pyproject.toml` file.
 
 ### Clone this repository
 ```bash
-git clone https://github.com/<your-username>/data-analytics-chatbot.git
+git clone https://github.com/ritvikv03/data-analytics-chatbot.git
 ```
 ```bash
 cd data-analytics-chatbot
