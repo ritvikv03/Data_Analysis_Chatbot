@@ -300,23 +300,60 @@ elif nav == "Settings":
 else:
     # CHAT PAGE
     st.header("Chat")
+
     # Display chat messages
     chat_box = st.empty()
-    for msg in st.session_state["messages"]:
-        role = msg['role']
-        content = msg['content']
-        if role == "user":
-            st.markdown(f"<div class='msg-bubble msg-user clearfix'>{content}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='msg-bubble msg-bot clearfix'>{content}</div>", unsafe_allow_html=True)
+    def render_chat():
+        for msg in st.session_state["messages"]:
+            role = msg['role']
+            content = msg['content']
+            role_class = "msg-user" if role=="user" else "msg-bot"
+            chat_box.markdown(f"<div class='msg-bubble {role_class} clearfix'>{content}</div>", unsafe_allow_html=True)
+    render_chat()
+
     # Input box
     user_input = st.text_area("Your message:", "", key="chat_input", height=80)
     if st.button("Send"):
         if user_input.strip():
             add_message("user", user_input)
-            # Stubbed bot response
-            add_message("bot", f"Echo: {user_input}")
-            safe_rerun()
+            render_chat()
+
+            # Generate assistant response
+            try:
+                with st.spinner("🤖 Assistant is typing..."):
+                    system_context = "You are a helpful, expert ML and Stats assistant. Provide concise explanations with LaTeX when useful."
+                    # Add uploaded file snippet
+                    file_context = ""
+                    if st.session_state["uploads"]:
+                        last_file = st.session_state["uploads"][-1]
+                        snippet = (last_file["content"][:3000].decode("utf-8", errors="ignore")
+                                   if isinstance(last_file["content"], (bytes, bytearray)) else str(last_file["content"])[:3000])
+                        file_context = f"\n\nContext from uploaded file ({last_file['name']}):\n{snippet}"
+
+                    # Build prompt
+                    conv_text = system_context + file_context + "\n\nConversation:\n"
+                    for msg in st.session_state["messages"][-8:]:
+                        conv_text += f"{msg['role']}: {msg['content']}\n"
+
+                    # Call Gemini
+                    model = genai.GenerativeModel(
+                        'gemini-2.5-flash',
+                        generation_config={
+                            'temperature': 0.2 if not st.session_state.get("verbose", False) else 0.7,
+                            'top_p': 0.8,
+                            'top_k': 40,
+                            'max_output_tokens': 2048,
+                        }
+                    )
+                    response = model.generate_content(conv_text)
+                    assistant_text = response.text if hasattr(response, "text") else "Sorry, could not generate a response."
+
+                    add_message("assistant", assistant_text)
+                    render_chat()
+            except Exception as e:
+                add_message("assistant", f"⚠️ Error generating response: {e}")
+                render_chat()
+
     # Export
     st.divider()
     st.markdown("### Export Chat")
@@ -333,4 +370,3 @@ else:
 
 st.markdown("---")
 st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. This demo contains stubbed and limited analysis.</div>", unsafe_allow_html=True)
-
