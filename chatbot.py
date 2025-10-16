@@ -10,7 +10,61 @@ import numpy as np
 import io
 
 
-st.set_page_config(page_title="Data Analytics Helper", layout="wide")
+st.set_page_config(
+   page_title="Data Analytics Helper", 
+   layout="wide"
+   initial_sidebar_state="expanded",
+   menu_items={
+      'Get Help': 'https://github.com/yourusername/yourrepo',
+      'Report a bug': 'https://github.com/yourusername/yourrepo/issues',
+      'About': '# Data Analytics Helper\nPowered by Google Gemini'
+   }
+)
+
+st.markdown("""
+<style>
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Better spacing */
+    .block-container {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+        max-width: 1200px;
+    }
+    
+    /* Prettier chat input */
+    .stChatInput {
+        border-radius: 25px;
+    }
+    
+    /* Better buttons */
+    .stButton button {
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Nicer file uploader */
+    .stFileUploader {
+        border: 2px dashed #4CAF50;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    
+    /* Better expanders */
+    .streamlit-expanderHeader {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("Data Analytics Chatbot 🤖")
 st.markdown("AI-Assistant to help simplify complex topics about data! Upload lecture notes, datasets, or statistical analysis documents to get simplified insights, practice problems, and implementation tips!")
