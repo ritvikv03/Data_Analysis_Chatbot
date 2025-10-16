@@ -6,7 +6,7 @@ You can upload lecture notes, datasets (CSV, Excel), PDFs, or Word documents —
 ---
 ## Quick Start
 
-1. Visit: [https://data-analytics-chatbot-rv.streamlit.app/]
+1. Visit: https://data-analytics-chatbot-rv.streamlit.app/
 2. Get FREE Gemini API key: https://aistudio.google.com/app/apikey
 3. Paste key in the app
 4. Start learning!
