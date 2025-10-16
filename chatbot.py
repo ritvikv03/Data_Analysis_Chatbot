@@ -167,36 +167,55 @@ def build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols):
     return "\n\n".join(overview)
 
 def export_chat_as_docx(chat_history):
+    from docx import Document
+    from io import BytesIO
+
     doc = Document()
     doc.add_heading("Chat Export - Data Analytics Helper", level=1)
+
     for msg in chat_history:
         p = doc.add_paragraph()
         p.add_run(f"{msg['role'].capitalize()} ({msg['ts']}): ").bold = True
-        p.add_run(msg['content'])
+        # Ensure plain text (strip HTML)
+        clean_content = msg['content'].replace("<br>", "\n").replace("&nbsp;", " ")
+        p.add_run(clean_content)
+
     out = BytesIO()
     doc.save(out)
     out.seek(0)
-    return out
+    return out.getvalue()  # Return bytes, compatible with st.download_button
 
 def export_chat_as_pdf(chat_history):
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from io import BytesIO
+
     buffer = BytesIO()
-    c = pdf_canvas.Canvas(buffer, pagesize=letter)
+    c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
     y = height - 72
+    line_height = 14
+
     c.setFont("Helvetica-Bold", 14)
     c.drawString(72, y, "Chat Export - Data Analytics Helper")
     y -= 28
     c.setFont("Helvetica", 10)
+
     for msg in chat_history:
-        if y < 72:
-            c.showPage()
-            y = height - 72
-        text = f"{msg['role'].capitalize()} ({msg['ts']}): {msg['content']}"
-        c.drawString(72, y, text[:100])
-        y -= 14
+        # Strip HTML tags for PDF
+        import re
+        clean_text = re.sub('<.*?>', '', msg['content'])
+        text = f"{msg['role'].capitalize()} ({msg['ts']}): {clean_text}"
+        for line in text.split("\n"):
+            if y < 72:
+                c.showPage()
+                y = height - 72
+                c.setFont("Helvetica", 10)
+            c.drawString(72, y, line[:1000])  # truncate very long lines
+            y -= line_height
     c.save()
     buffer.seek(0)
-    return buffer
+    return buffer.getvalue() 
 
 # -------------------------
 # API Key Input
