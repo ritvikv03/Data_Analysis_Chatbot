@@ -26,24 +26,25 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* ===============================
-       CRIMSON DARK MODE THEME (BLACK SIDEBAR TEXT)
+       CRIMSON DARK MODE THEME (DARKER SIDEBAR)
        =============================== */
 
     :root {
-        --primary-color: #ff6b6b;       /* Main accent red */
-        --primary-dark: #ff4b4b;        /* Darker shade for gradient */
-        --sidebar-bg: #ff6b6b;          /* Sidebar background */
+        --primary-color: #ff6b6b;       /* Main accent red for buttons */
+        --primary-dark: #ff4b4b;        /* Slightly darker red accent */
+        --sidebar-bg: #8b0000;          /* Dark red sidebar (was light red) */
+        --sidebar-bg-dark: #660000;     /* Bottom gradient */
         --main-bg: #2b2b2b;             /* Main page dark grey */
         --widget-bg: #3a3a3a;           /* Widget background */
         --text-color: #ffffff;          /* White text for main area */
-        --sidebar-text: #000000;        /* Black text in sidebar */
-        --sidebar-border: #000000;      /* Black border in sidebar */
-        --hover-bg: #444444;            /* Hover effect on dark */
+        --sidebar-text: #000000;        /* Black text inside sidebar */
+        --sidebar-border: #000000;      /* Black border for sidebar items */
+        --hover-bg: #444444;            /* Hover effect for dark areas */
     }
 
     /* Hide Streamlit branding */
     #MainMenu, footer {visibility: hidden;}
-    header {visibility: visible;}  /* Keep header for sidebar button */
+    header {visibility: visible;}  /* Keep header for sidebar toggle */
 
     /* Sidebar toggle always visible */
     [data-testid="collapsedControl"] {
@@ -67,7 +68,7 @@ st.markdown("""
         max-width: 1400px;
     }
 
-    /* Chat and text styling */
+    /* Text and widgets */
     .stMarkdown, .stText, .stTextInput, .stSelectbox {
         color: var(--text-color) !important;
     }
@@ -115,10 +116,7 @@ st.markdown("""
     }
 
     /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px 10px 0 0;
         padding: 10px 20px;
@@ -167,7 +165,7 @@ st.markdown("""
 
     /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--primary-dark) 100%) !important;
+        background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-dark) 100%) !important;
         color: var(--sidebar-text) !important;
         border-right: 2px solid var(--sidebar-border) !important;
     }
@@ -199,9 +197,9 @@ st.markdown("""
     }
 
     [data-testid="stSidebar"] button:hover {
-        background-color: #ffeaea !important;
-        color: var(--primary-dark) !important;
-        border: 2px solid var(--primary-dark) !important;
+        background-color: var(--sidebar-border) !important;
+        color: white !important;
+        border: 2px solid white !important;
     }
 
     /* Sidebar metrics */
@@ -211,6 +209,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
