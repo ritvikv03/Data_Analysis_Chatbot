@@ -193,12 +193,12 @@ def generate_ml_stats_analysis(content, file_type, stats_analysis=None):
    - Common pitfalls
 
 Dataset snippet (truncated to 20000 chars):
-{content[:20000]}"""
+{content[:30000]}"""
         else:
             prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this material and create a focused study guide with the same sections:
 
 Content snippet (truncated):
-{content[:20000]}"""
+{content[:30000]}"""
 
         response = model.generate_content(prompt)
         return response.text if response and hasattr(response,"text") else "⚠️ Unable to generate response"
@@ -212,16 +212,30 @@ if not st.session_state["gemini_api_key"]:
     st.sidebar.success("💰 100% FREE - Powered by Google Gemini")
     st.sidebar.info("📊 1,500 requests/day available")
     st.header("Set up your Gemini API Key")
-    api_key = st.text_input("Enter your Gemini API Key:", type="password", key="api_input")
-    if st.button("Set API Key") and api_key:
-        set_gemini_api_key(api_key)
-        st.success("API Key set successfully!")
-        safe_rerun()
+    api_key_col1, api_key_col2 = st.columns([4,1])
+    with api_key_col1:
+        api_key = st.text_input("Enter your Gemini API Key:", type="password", key="api_input")
+    with api_key_col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Set API Key"):
+            if api_key:
+                set_gemini_api_key(api_key)
+                st.success("API Key set successfully!")
+                safe_rerun()
+            else:
+                st.error("Please enter a valid API key.")
+        with st.expander("How to get your FREE Gemini API Key"):
+            st.markdown("""
+            1. Go to Google AI Studio (https://aistudio.google.com/app/apikey)
+            2. Sign in with Google
+            3. Create API Key and paste it above
+            """)
     st.stop()
 else:
-    try: genai.configure(api_key=st.session_state["gemini_api_key"])
-    except Exception: pass
-
+    try:
+        genai.configure(api_key=st.session_state["gemini_api_key"])
+    except Exception:
+        pass
 # -------------------------
 # Sidebar navigation & recent uploads
 # -------------------------
@@ -248,13 +262,28 @@ with st.sidebar:
 # -------------------------
 if nav=="Uploads":
     st.header("Upload Materials")
-    files=st.file_uploader("Choose files to analyze",accept_multiple_files=True,type=['txt','pdf','docx','csv','xlsx'])
-    if files:
-        for uf in files:
-            content=uf.read()
-            st.session_state["uploads"].append({"name":uf.name,"content":content,"uploaded_at":datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),"type":uf.type or uf.name.split('.')[-1]})
-            add_message("assistant", f"Uploaded {uf.name}: {uf.type.upper()} detected.")
-    st.info("Uploaded files will appear in the sidebar and can be analyzed in chat.")
+    st.markdown("Drop a file to upload. Supported: txt, pdf, docx, csv, xlsx")
+    with st.form("upload_form", clear_on_submit=False):
+        files = st.file_uploader("Choose files to analyze", accept_multiple_files=True, type=['txt','pdf','docx','csv','xlsx'])
+        auto_analyze = st.checkbox("Auto-analyze after upload", value=False)
+        submitted = st.form_submit_button("Upload")
+        if submitted and files:
+            prog = st.progress(0)
+            total = len(files)
+            for i, uf in enumerate(files):
+                prog.progress(int((i+1)/total*100))
+                content = uf.read()
+                st.session_state["uploads"].append({
+                    "name": uf.name,
+                    "content": content,
+                    "uploaded_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+                    "type": uf.type
+                })
+                if auto_analyze:
+                    text, ftype, df, stats = extract_text_from_file(uf)
+                    st.text_area(f"Preview: {uf.name}", text, height=200)
+            st.success("Files uploaded successfully!")
+            st.info("Files can be dragged into chat for further analysis")
 
 elif nav=="Reference":
     st.header("Quick Reference")
@@ -262,6 +291,7 @@ elif nav=="Reference":
 
 elif nav=="Settings":
     st.header("Settings & Preferences")
+    st.markdown("Reset data.")
     if st.button("Reset all except API key"): key=st.session_state.get("gemini_api_key",""); st.session_state.clear(); st.session_state["gemini_api_key"]=key; safe_rerun()
 
 else:
@@ -309,7 +339,7 @@ else:
                             'temperature': 0.2 if not st.session_state.get("verbose", False) else 0.7,
                             'top_p': 0.8,
                             'top_k': 40,
-                            'max_output_tokens': 2048,
+                            'max_output_tokens': 4096,
                         }
                     )
                     response = model.generate_content(conv_text)
