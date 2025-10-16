@@ -113,7 +113,7 @@ Provide a focused analysis with these sections (be concise but insightful):
             prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this academic material and create a focused study guide.
 
 Content to analyze:
-{content[:20000]}
+{content[:40000]}
 
 Provide a concise analysis with these sections:
 
