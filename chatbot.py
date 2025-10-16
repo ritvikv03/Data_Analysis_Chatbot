@@ -469,31 +469,47 @@ else:
             out = export_chat_as_docx(st.session_state["messages"])
             if out:
                 st.download_button("Download DOCX", out, file_name="chat_export.docx")
+    
         if st.button("Export chat as PDF"):
             out = export_chat_as_pdf(st.session_state["messages"])
             if out:
                 st.download_button("Download PDF", out, file_name="chat_export.pdf")
+    
         st.divider()
         st.markdown("### Quick file view")
-        if st.session_state["uploads"]:
+    
+        if st.session_state.get("uploads"):
             for f in reversed(st.session_state["uploads"][-5:]):
                 st.markdown(f"- **{f['name']}** — {f['uploaded_at']}")
         else:
             st.write("No files uploaded yet.")
+    
         st.divider()
         st.markdown("### Suggested prompts")
-        if st.session_state["uploads"]:
+    
+        def safe_rerun():
+            """Safe version that works across Streamlit versions."""
+            try:
+                if hasattr(st, "rerun"):
+                    st.rerun()
+                else:
+                    st.experimental_rerun()
+            except Exception:
+                pass  # Prevents app crash if rerun not supported
+    
+        if st.session_state.get("uploads"):
             last = st.session_state["uploads"][-1]
             if st.button(f"Summarize {last['name']}"):
                 add_message("user", f"Please summarize the file {last['name']} and suggest next steps.")
-                st.experimental_rerun()
+                safe_rerun()
             if st.button(f"Suggest visualizations for {last['name']}"):
                 add_message("user", f"Give 3 visualization ideas for {last['name']}.")
-                st.experimental_rerun()
+                safe_rerun()
         else:
             if st.button("Try: Explain linear regression like I'm 5"):
                 add_message("user", "Explain linear regression like I'm 5 years old")
-                st.experimental_rerun()
+                safe_rerun()
+
 
     # If new user messages exist with no assistant reply, generate assistant reply.
     # We'll check last two messages: if last role is 'user', generate an assistant response.
