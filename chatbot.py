@@ -560,7 +560,6 @@ When answering:
                 add_message("bot", bot_response)
                 
                 # 4. Clear input and rerun
-                st.session_state["chat_input"] = ""
                 safe_rerun()
             else:
                 st.warning("Please enter a message.")
