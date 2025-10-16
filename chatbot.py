@@ -393,45 +393,43 @@ st.markdown("""
 
 # API Key Setup
 if not get_gemini_api_key():
-    st.info("🎉 **100% FREE!** No payment required - just get a free API key")
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        api_key = st.text_input(
-           "Enter your FREE Gemini API Key:", 
-           type="password", 
-           placeholder="Paste your API key here...",
-           help="Get yours free at aistudio.google.com"
-        )
-       if st.button("🚀 Start Learning", type="primary", use_container_width=True):
-          if api_key and api_key.startswith("AI") and len(api_key) > 30:
-             set_gemini_api_key(api_key)
-             st.success("✅ API Key activated!")
-             st.balloons()
-             st.rerun()
-          else:
-             st.error("Please enter a valid API key")
+   st.info("🎉 **100% FREE!** No payment required - just get a free API key")
+   col1, col2, col3 = st.columns([1, 2, 1])
+   with col2:
+      api_key = st.text_input(
+         "Enter your FREE Gemini API Key:", 
+         type="password", 
+         placeholder="Paste your API key here...",
+         help="Get yours free at aistudio.google.com"
+      )
+      if st.button("🚀 Start Learning", type="primary", use_container_width=True):
+         if api_key and api_key.startswith("AI") and len(api_key) > 30:
+            set_gemini_api_key(api_key)
+            st.success("✅ API Key activated!")
+            st.balloons()
+            st.rerun()
+         else:
+            st.error("Please enter a valid API key")
         
-    
-    with st.expander("📖 How to get your FREE Gemini API Key (takes 30 seconds)"):
-        st.markdown("""
-        ### Step-by-Step:
-        1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-        2. Sign in with your Google account
-        3. Click **"Create API Key"**
-        4. Copy the key and paste it above
+      with st.expander("📖 How to get your FREE Gemini API Key (takes 30 seconds)"):
+         st.markdown("""
+         ### Step-by-Step:
+         1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+         2. Sign in with your Google account
+         3. Click **"Create API Key"**
+         4. Copy the key and paste it above
         
-        ### Free Tier Limits:
-        - ✅ **1,500 requests per day** (more than enough!)
-        - ✅ **15 requests per minute**
-        - ✅ **1 million tokens per minute**
-        - ✅ **No credit card required**
-        - ✅ **Never expires**
-        
-        Perfect for us!
-        """)
+         ### Free Tier Limits:
+         - ✅ **1,500 requests per day** (more than enough!)
+         - ✅ **15 requests per minute**
+         - ✅ **1 million tokens per minute**
+         - ✅ **No credit card required**
+         - ✅ **Never expires**
+           
+         Perfect for us!
+         """)
     
-    st.stop()
+   st.stop()
 
 # Configure Gemini
 genai.configure(api_key=get_gemini_api_key())
