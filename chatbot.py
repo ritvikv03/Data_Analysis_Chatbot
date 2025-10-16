@@ -601,4 +601,3 @@ When answering:
 
     st.markdown("---")
     st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. This demo is powered by Google Gemini.</div>", unsafe_allow_html=True)
-```eof
