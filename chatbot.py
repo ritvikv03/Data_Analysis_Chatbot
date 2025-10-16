@@ -26,7 +26,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* ===============================
-       CRIMSON DARK MODE THEME
+       CRIMSON DARK MODE THEME (BLACK SIDEBAR TEXT)
        =============================== */
 
     :root {
@@ -35,8 +35,9 @@ st.markdown("""
         --sidebar-bg: #ff6b6b;          /* Sidebar background */
         --main-bg: #2b2b2b;             /* Main page dark grey */
         --widget-bg: #3a3a3a;           /* Widget background */
-        --text-color: #ffffff;          /* White text */
-        --muted-text: #d3d3d3;          /* Muted grey text */
+        --text-color: #ffffff;          /* White text for main area */
+        --sidebar-text: #000000;        /* Black text in sidebar */
+        --sidebar-border: #000000;      /* Black border in sidebar */
         --hover-bg: #444444;            /* Hover effect on dark */
     }
 
@@ -44,7 +45,7 @@ st.markdown("""
     #MainMenu, footer {visibility: hidden;}
     header {visibility: visible;}  /* Keep header for sidebar button */
 
-    /* Ensure sidebar toggle (hamburger) is always visible */
+    /* Sidebar toggle always visible */
     [data-testid="collapsedControl"] {
         visibility: visible !important;
         opacity: 1 !important;
@@ -66,12 +67,11 @@ st.markdown("""
         max-width: 1400px;
     }
 
-    /* Markdown and text */
+    /* Chat and text styling */
     .stMarkdown, .stText, .stTextInput, .stSelectbox {
         color: var(--text-color) !important;
     }
 
-    /* Chat messages */
     .stChatMessage {
         background-color: var(--widget-bg) !important;
         color: var(--text-color) !important;
@@ -81,7 +81,6 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    /* Chat input */
     .stChatInput {
         border-radius: 25px;
         border: 2px solid #555;
@@ -143,7 +142,7 @@ st.markdown("""
         color: var(--text-color);
     }
 
-    /* Info boxes */
+    /* Boxes */
     .stSuccess, .stInfo, .stWarning {
         border-radius: 10px;
         padding: 1rem;
@@ -166,30 +165,53 @@ st.markdown("""
         background-color: var(--primary-color) !important;
     }
 
-    /* Sidebar */
+    /* Sidebar styling */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--primary-dark) 100%) !important;
-        color: var(--text-color) !important;
+        color: var(--sidebar-text) !important;
+        border-right: 2px solid var(--sidebar-border) !important;
     }
 
+    /* Sidebar text */
     [data-testid="stSidebar"] * {
-        color: var(--text-color) !important;
+        color: var(--sidebar-text) !important;
     }
 
+    /* Sidebar headers */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4 {
+        color: var(--sidebar-text) !important;
+    }
+
+    /* Sidebar markdown */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: var(--sidebar-text) !important;
+    }
+
+    /* Sidebar buttons */
     [data-testid="stSidebar"] button {
-        background-color: var(--text-color) !important;
-        color: var(--primary-dark) !important;
+        background-color: white !important;
+        color: var(--sidebar-text) !important;
+        border: 2px solid var(--sidebar-border) !important;
         border-radius: 8px;
-        border: none;
     }
 
     [data-testid="stSidebar"] button:hover {
         background-color: #ffeaea !important;
-        color: var(--primary-color) !important;
+        color: var(--primary-dark) !important;
+        border: 2px solid var(--primary-dark) !important;
     }
 
+    /* Sidebar metrics */
+    [data-testid="stSidebar"] [data-testid="stMetricValue"],
+    [data-testid="stSidebar"] [data-testid="stMetricLabel"] {
+        color: var(--sidebar-text) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 st.title("Data Analytics Chatbot 🤖")
