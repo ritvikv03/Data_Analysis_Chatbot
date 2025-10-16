@@ -141,6 +141,12 @@ def extract_text_from_file(uploaded_file):
        (file_content:str, file_type:str, dataframe or None, stats_analysis or None)
     """
     try:
+        if uploaded_file is None:
+            return "","",None,None
+
+        # Handle edge cases
+        file_name = getattr(uploaded_file, "name", "")
+        file_type = getattr(uploaded_file, "type", "")
         # text file
         if uploaded_file.type == "text/plain" or uploaded_file.name.endswith('.txt'):
             content = uploaded_file.read().decode("utf-8", errors="ignore")
@@ -178,6 +184,7 @@ def extract_text_from_file(uploaded_file):
             content = build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols)
             return content, "xlsx", df, stats_analysis
 
+        st.warning("Unsupported file type. Please upload a .txt, .pdf, .docx, .csv, or .xlsx file.")
         return "", "", None, None
 
     except Exception as e:
@@ -186,23 +193,29 @@ def extract_text_from_file(uploaded_file):
 
 def build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols):
     """Helper to create a compact textual overview for datasets"""
-    overview = []
-    overview.append(f"Dataset Overview:\n- Shape: {df.shape[0]} rows × {df.shape[1]} columns")
-    overview.append(f"- Memory Usage: {stats_analysis['basic_stats']['memory_usage']:.2f} MB")
-    overview.append(f"- Numerical Features ({len(num_cols)}): {', '.join(num_cols[:10]) if num_cols else 'None'}")
-    overview.append(f"- Categorical Features ({len(cat_cols)}): {', '.join(cat_cols[:10]) if cat_cols else 'None'}")
-    overview.append("\nMissing Values (percent):")
-    for k, v in stats_analysis['basic_stats']['missing_pct'].items():
-        overview.append(f"- {k}: {v:.2f}%")
-    if num_cols:
-        overview.append("\nStatistical Summary (numerical features):")
-        overview.append(str(pd.DataFrame(stats_analysis['distributions']).transpose().head(10)))
-    if stats_analysis.get('correlations') is not None:
-        overview.append("\nCorrelation matrix (top features):")
-        overview.append(str(stats_analysis['correlations'].round(3).head(10)))
-    overview.append("\nSample Data (first 5 rows):")
-    overview.append(df.head(5).to_string())
-    return "\n\n".join(overview)
+    try:
+        if df is None or df.empty:
+            return "Dataset appears to be empty or unreadable."
+        overview = []
+        overview.append(f"Dataset Overview:\n- Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+        overview.append(f"- Memory Usage: {stats_analysis['basic_stats']['memory_usage']:.2f} MB")
+        overview.append(f"- Numerical Features ({len(num_cols)}): {', '.join(num_cols[:10]) if num_cols else 'None'}")
+        overview.append(f"- Categorical Features ({len(cat_cols)}): {', '.join(cat_cols[:10]) if cat_cols else 'None'}")
+        overview.append("\nMissing Values (percent):")
+        for k, v in stats_analysis['basic_stats']['missing_pct'].items():
+            overview.append(f"- {k}: {v:.2f}%")
+        if num_cols:
+            overview.append("\nStatistical Summary (numerical features):")
+            overview.append(str(pd.DataFrame(stats_analysis['distributions']).transpose().head(10)))
+        if stats_analysis.get('correlations') is not None:
+            overview.append("\nCorrelation matrix (top features):")
+            overview.append(str(stats_analysis['correlations'].round(3).head(10)))
+        overview.append("\nSample Data (first 5 rows):")
+        overview.append(df.head(5).to_string())
+        return "\n\n".join(overview)
+    except Exception as e:
+        st.error(f"Error while building dataset summary: {e}")
+        return "Error generating dataset overview"
 
 # Exports
 def export_chat_as_docx(chat_history):
