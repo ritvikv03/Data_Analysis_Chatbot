@@ -14,7 +14,7 @@ from datetime import datetime
 import time
 import base64
 import os
-
+        
 # Optional dependencies detection for exports
 try:
     from docx import Document as DocxDocument
@@ -81,6 +81,13 @@ a {{ color: {ACCENT} !important; }}
 
 /* Dataframe container tweak */
 .css-1lcbmhc .stFileUploader {{ width: 100%; }}
+
+body {{ background-color: #0b1020; color: #e6edf3; }}
+.stSidebar {{ background-color: #0f1724; color: #e6edf3; }}
+.msg-user {{ background: rgba(255,255,255,0.06); border-radius: 12px; padding: 8px; float:right; clear:both; }}
+.msg-bot {{ background: rgba(16,163,127,0.12); border-radius: 12px; padding: 8px; float:left; clear:both; }}
+.clearfix::after {{ content:""; clear:both; display:table; }}
+.chat-window {{ background-color: #071021; border-radius: 12px; padding: 16px; height: 520px; overflow-y: auto; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -99,6 +106,14 @@ if "messages" not in st.session_state:
 # -------------------------
 # Utility functions
 # -------------------------
+def safe_rerun():
+    """Safe version that works across Streamlit versions."""
+    try:
+        if hasattr(st, "rerun"):
+            st.rerun()
+    except Exception:
+        pass  # Prevents app crash if rerun not supported
+        
 def set_gemini_api_key(api_key: str):
     st.session_state["gemini_api_key"] = api_key
     try:
@@ -108,33 +123,6 @@ def set_gemini_api_key(api_key: str):
 
 def add_message(role: str, content: str):
     st.session_state["messages"].append({"role": role, "content": content, "ts": datetime.utcnow().isoformat()})
-
-def analyze_dataset_statistics(df):
-    """Perform comprehensive statistical analysis on dataset"""
-    analysis = {
-        'basic_stats': {},
-        'distributions': {},
-        'correlations': None,
-        'categorical': {},
-    }
-
-    analysis['basic_stats'] = {
-        'shape': df.shape,
-        'missing_pct': (df.isnull().sum() / len(df) * 100).to_dict(),
-        'dtypes': df.dtypes.apply(lambda x: str(x)).to_dict(),
-        'memory_usage': df.memory_usage(deep=True).sum() / 1024**2  # MB
-    }
-
-    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    if numerical_cols:
-        analysis['distributions'] = df[numerical_cols].describe().to_dict()
-        if len(numerical_cols) > 1:
-            analysis['correlations'] = df[numerical_cols].corr()
-
-    categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
-    analysis['categorical'] = {col: df[col].value_counts().head(10).to_dict() for col in categorical_cols[:10]}
-
-    return analysis, numerical_cols, categorical_cols
 
 def extract_text_from_file(uploaded_file):
     """Extract text or dataset from uploaded file. Returns tuple depending on content:
@@ -191,6 +179,66 @@ def extract_text_from_file(uploaded_file):
         st.error(f"Error extracting file: {e}")
         return None, None, None, None
 
+def export_chat_as_docx(chat_history):
+    doc = Document()
+    doc.add_heading("Chat Export - Data Analytics Helper", level=1)
+    for msg in chat_history:
+        p = doc.add_paragraph()
+        p.add_run(f"{msg['role'].capitalize()} ({msg['ts']}): ").bold = True
+        p.add_run(msg['content'])
+    out = BytesIO()
+    doc.save(out)
+    out.seek(0)
+    return out
+
+def export_chat_as_pdf(chat_history):
+    buffer = BytesIO()
+    c = pdf_canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    y = height - 72
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(72, y, "Chat Export - Data Analytics Helper")
+    y -= 28
+    c.setFont("Helvetica", 10)
+    for msg in chat_history:
+        if y < 72:
+            c.showPage()
+            y = height - 72
+        text = f"{msg['role'].capitalize()} ({msg['ts']}): {msg['content']}"
+        c.drawString(72, y, text[:100])
+        y -= 14
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def analyze_dataset_statistics(df):
+    """Perform comprehensive statistical analysis on dataset"""
+    analysis = {
+        'basic_stats': {},
+        'distributions': {},
+        'correlations': None,
+        'categorical': {},
+    }
+
+    analysis['basic_stats'] = {
+        'shape': df.shape,
+        'missing_pct': (df.isnull().sum() / len(df) * 100).to_dict(),
+        'dtypes': df.dtypes.apply(lambda x: str(x)).to_dict(),
+        'memory_usage': df.memory_usage(deep=True).sum() / 1024**2  # MB
+    }
+
+    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    if numerical_cols:
+        analysis['distributions'] = df[numerical_cols].describe().to_dict()
+        if len(numerical_cols) > 1:
+            analysis['correlations'] = df[numerical_cols].corr()
+
+    categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    analysis['categorical'] = {col: df[col].value_counts().head(10).to_dict() for col in categorical_cols[:10]}
+
+    return analysis, numerical_cols, categorical_cols
+
+
 def build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols):
     """Helper to create a compact textual overview for datasets"""
     try:
@@ -216,54 +264,6 @@ def build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols):
     except Exception as e:
         st.error(f"Error while building dataset summary: {e}")
         return "Error generating dataset overview"
-
-# Exports
-def export_chat_as_docx(chat_history):
-    if not DOCX_AVAILABLE:
-        st.warning("python-docx not installed; DOCX export not available.")
-        return None
-    doc = DocxDocument()
-    doc.add_heading("Chat Export - Data Analytics Helper", level=1)
-    for msg in chat_history:
-        when = msg['ts']
-        sender = msg['role'].capitalize()
-        p = doc.add_paragraph()
-        p.add_run(f"{sender} ({when}): ").bold = True
-        p.add_run(msg['content'])
-    out = BytesIO()
-    doc.save(out)
-    out.seek(0)
-    return out
-
-def export_chat_as_pdf(chat_history):
-    if not PDF_AVAILABLE:
-        st.warning("reportlab not installed; PDF export not available.")
-        return None
-    buffer = BytesIO()
-    c = pdf_canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    y = height - 72
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(72, y, "Chat Export - Data Analytics Helper")
-    y -= 28
-    c.setFont("Helvetica", 10)
-    for msg in chat_history:
-        if y < 72:
-            c.showPage()
-            y = height - 72
-        sender = msg['role'].capitalize()
-        timestamp = msg['ts']
-        text = f"{sender} ({timestamp}): {msg['content']}"
-        # naive wrap
-        while len(text) > 100:
-            c.drawString(72, y, text[:100])
-            text = text[100:]
-            y -= 14
-        c.drawString(72, y, text)
-        y -= 18
-    c.save()
-    buffer.seek(0)
-    return buffer
 
 # -------------------------
 # API key block
@@ -456,18 +456,13 @@ else:
     left_col, right_col = st.columns([0.72, 0.28])
 
     with left_col:
-        # Chat window
-        st.markdown('<div class="chat-window" id="chat-window">', unsafe_allow_html=True)
-        for msg in st.session_state["messages"]:
-            role = msg["role"]
-            text = msg["content"]
-            ts = msg["ts"]
-            # Render bubble
-            if role == "user":
-                st.markdown(f"<div class='clearfix'><div class='msg-bubble msg-user'>{st.markdown(text, unsafe_allow_html=True) or ''}</div></div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div class='clearfix'><div class='msg-bubble msg-bot'>{st.markdown(text, unsafe_allow_html=True) or ''}</div></div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        def render_chat(messages):
+            chat_html = ""
+            for msg in messages:
+                role_class = "msg-user" if msg['role']=="user" else "msg-bot"
+                chat_html += f"<div class='clearfix'><div class='msg-bubble {role_class}'>{msg['content']}</div></div>"
+            st.markdown(f"<div class='chat-window'>{chat_html}</div>", unsafe_allow_html=True)
+        render_chat(st.session_state["messages"])
 
         # Input: using st.chat_input for native feel. Provide fallback to text_area if necessary.
         prompt = st.chat_input("Ask about algorithms, statistics, math, or implementation...")
@@ -501,16 +496,6 @@ else:
     
         st.divider()
         st.markdown("### Suggested prompts")
-    
-        def safe_rerun():
-            """Safe version that works across Streamlit versions."""
-            try:
-                if hasattr(st, "rerun"):
-                    st.rerun()
-                else:
-                    safe_rerun()
-            except Exception:
-                pass  # Prevents app crash if rerun not supported
     
         if st.session_state.get("uploads"):
             last = st.session_state["uploads"][-1]
