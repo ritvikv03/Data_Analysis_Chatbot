@@ -7,6 +7,6 @@ openpyxl
 numpy
 reportlab
 re
-matplotlib
+matplotlib.pyplot
 PIL
 io
