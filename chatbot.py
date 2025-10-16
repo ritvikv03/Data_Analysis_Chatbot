@@ -14,6 +14,187 @@ st.set_page_config(page_title="Data Analytics Helper", layout="wide")
 st.title("Data Analytics Chatbot 🤖")
 st.markdown("AI-Assistant to help simplify complex topics about data! Upload lecture notes, datasets, or statistical analysis documents to get simplified insights, practice problems, and implementation tips!")
 
+st.markdown("""
+<style>
+/* ====== GLOBAL ====== */
+html, body, [class*="css"] {
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    background-color: #1E1E1E !important; /* dark gray main background */
+    color: #f5f5f5 !important;
+}
+
+/* ====== HIDE STREAMLIT BRANDING ====== */
+#MainMenu, footer, header {visibility: hidden;}
+
+/* ====== PAGE CONTAINER ====== */
+.block-container {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+    max-width: 1400px;
+}
+
+/* ====== UW–MADISON COLOR THEME ====== */
+:root {
+    --madison-red: #C5050C;
+    --madison-dark-red: #9B0000;
+    --madison-gray: #282828;
+    --madison-light-gray: #E6E6E6;
+    --madison-black: #000000;
+    --madison-white: #FFFFFF;
+}
+
+/* ====== SIDEBAR ====== */
+[data-testid="stSidebar"] {
+    background: var(--madison-dark-red);
+    color: var(--madison-white) !important;
+    border-right: 3px solid black;
+}
+
+[data-testid="stSidebar"] * {
+    color: var(--madison-white) !important;
+}
+
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: var(--madison-white) !important;
+    font-weight: 700;
+}
+
+[data-testid="stSidebar"] button {
+    background-color: var(--madison-white) !important;
+    color: var(--madison-dark-red) !important;
+    border: 2px solid var(--madison-black);
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+[data-testid="stSidebar"] button:hover {
+    background-color: var(--madison-black) !important;
+    color: var(--madison-white) !important;
+    transform: translateY(-1px);
+}
+
+/* Make the sidebar toggle button always visible */
+[data-testid="collapsedControl"] {
+    background-color: var(--madison-dark-red) !important;
+    border: 2px solid var(--madison-black) !important;
+    color: var(--madison-white) !important;
+    opacity: 1 !important;
+}
+
+/* ====== MAIN CONTENT ====== */
+section.main > div {
+    background-color: var(--madison-gray) !important;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 0 12px rgba(0,0,0,0.4);
+}
+
+/* ====== FILE UPLOADER ====== */
+[data-testid="stFileUploader"] {
+    border: 2px dashed var(--madison-red);
+    border-radius: 12px;
+    background-color: #2b2b2b;
+    color: white;
+}
+
+[data-testid="stFileUploader"] label {
+    color: white !important;
+}
+
+/* ====== BUTTONS ====== */
+.stButton button {
+    background: var(--madison-red);
+    color: var(--madison-white);
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid black;
+    transition: all 0.3s ease;
+    padding: 0.6rem 1.4rem;
+}
+
+.stButton button:hover {
+    background: var(--madison-black);
+    color: var(--madison-white);
+    transform: translateY(-2px);
+}
+
+/* ====== TABS ====== */
+.stTabs [data-baseweb="tab-list"] {
+    border-bottom: 2px solid var(--madison-red);
+    gap: 8px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #2b2b2b;
+    color: var(--madison-white);
+    border-radius: 8px 8px 0 0;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: var(--madison-red);
+    color: white;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background-color: var(--madison-red);
+    color: white;
+}
+
+/* ====== METRICS ====== */
+[data-testid="stMetricValue"] {
+    color: var(--madison-white) !important;
+    font-size: 1.6rem;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #dddddd !important;
+}
+
+/* ====== CHAT ====== */
+.stChatMessage {
+    background-color: #2c2c2c;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    margin-bottom: 0.8rem;
+}
+
+.stChatInput {
+    background-color: #2c2c2c;
+    border-radius: 20px;
+    border: 1px solid var(--madison-red);
+}
+
+/* ====== EXPANDERS ====== */
+.streamlit-expanderHeader {
+    background-color: var(--madison-dark-red);
+    color: var(--madison-white);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* ====== TABLES & DATAFRAMES ====== */
+.dataframe {
+    background-color: #1E1E1E !important;
+    border-radius: 10px;
+    border: 1px solid var(--madison-light-gray);
+    color: white;
+}
+
+/* ====== PROGRESS BAR ====== */
+.stProgress > div > div {
+    background-color: var(--madison-red);
+    border-radius: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # Session state initialization
 def get_gemini_api_key():
     return st.session_state.get("gemini_api_key", "")
