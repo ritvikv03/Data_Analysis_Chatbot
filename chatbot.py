@@ -7,6 +7,7 @@
 
 import streamlit as st
 import google.generativeai as genai
+from google.generativeai import types # Add this line
 import pdfplumber
 import pandas as pd
 import numpy as np
