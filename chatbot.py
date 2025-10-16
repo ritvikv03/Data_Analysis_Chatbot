@@ -174,84 +174,41 @@ def build_dataset_overview_string(df, stats_analysis, num_cols, cat_cols):
     overview.append(df.head(5).to_string())
     return "\n\n".join(overview)
 
-def render_latex_to_image(latex_code):
-    """Render LaTeX string to PNG image in memory."""
-    fig = plt.figure()
-    fig.text(0, 0, f"${latex_code}$", fontsize=14)
-    buffer = io.BytesIO()
-    plt.axis('off')
-    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=200, transparent=True)
-    plt.close(fig)
-    buffer.seek(0)
-    return buffer
 
-def export_chat_as_docx_with_latex(chat_history):
-    doc = Document()
-    doc.add_heading("Chat Export", level=1)
+def export_chat_as_pdf(chat_history):
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from io import BytesIO
 
-    for msg in chat_history:
-        p = doc.add_paragraph()
-        p.add_run(f"{msg['role'].capitalize()}: ").bold = True
-
-        text = msg['content']
-        # Replace LaTeX patterns with images
-        pos = 0
-        for match in LATEX_INLINE_PATTERN.finditer(text):
-            # Add preceding text
-            p.add_run(text[pos:match.start()])
-            # Render LaTeX image
-            img_buffer = render_latex_to_image(match.group(1))
-            p.add_run().add_picture(img_buffer, width=docx.shared.Inches(2))
-            pos = match.end()
-        # Add remaining text
-        p.add_run(text[pos:])
-
-    out = io.BytesIO()
-    doc.save(out)
-    out.seek(0)
-    return out
-
-def export_chat_as_pdf_with_latex(chat_history):
-    buffer = io.BytesIO()
+    buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-    y = height - 50
+    y = height - 72
+    line_height = 14
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(72, y, "Chat Export - Data Analytics Helper")
+    y -= 28
+    c.setFont("Helvetica", 10)
 
     for msg in chat_history:
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y, f"{msg['role'].capitalize()}:")
-        y -= 20
-        text = msg['content']
-
-        # Split by LaTeX inline for image rendering
-        pos = 0
-        for match in LATEX_INLINE_PATTERN.finditer(text):
-            pre_text = text[pos:match.start()]
-            if pre_text:
+        # Strip HTML tags for PDF
+        import re
+        clean_text = re.sub('<.*?>', '', msg['content'])
+        text = f"{msg['role'].capitalize()} ({msg['ts']}): {clean_text}"
+        for line in text.split("\n"):
+            if y < 72:
+                c.showPage()
+                y = height - 72
                 c.setFont("Helvetica", 10)
-                c.drawString(60, y, pre_text)
-                y -= 14
-            # Render LaTeX
-            img_buffer = render_latex_to_image(match.group(1))
-            img = Image.open(img_buffer)
-            c.drawInlineImage(img, 60, y-14, width=200, height=20)
-            y -= 24
-            pos = match.end()
-        # Remaining text
-        rem_text = text[pos:]
-        if rem_text:
-            c.setFont("Helvetica", 10)
-            c.drawString(60, y, rem_text)
-            y -= 20
-
-        y -= 10
-        if y < 50:
-            c.showPage()
-            y = height - 50
+            c.drawString(72, y, line[:1000])  # truncate very long lines
+            y -= line_height
 
     c.save()
     buffer.seek(0)
-    return buffer
+    return buffer.getvalue()  # Return bytes
+
+
 # -------------------------
 # API Key Input
 # -------------------------
