@@ -2,10 +2,7 @@ streamlit
 google-generativeai
 pdfplumber
 pandas
+numpy
 python-docx
 openpyxl
-numpy
 reportlab
-re
-PIL
-io
