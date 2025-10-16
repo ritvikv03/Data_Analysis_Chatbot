@@ -265,38 +265,75 @@ elif nav=="Settings":
     if st.button("Reset all except API key"): key=st.session_state.get("gemini_api_key",""); st.session_state.clear(); st.session_state["gemini_api_key"]=key; safe_rerun()
 
 else:
-    # -------------------------
     # CHAT PAGE
-    # -------------------------
     st.header("Chat")
-    chat_box=st.empty()
-    for msg in st.session_state["messages"]:
-        role,msg=msg['role'],msg['content']
-        cls="msg-user" if role=="user" else "msg-bot"
-        st.markdown(f"<div class='msg-bubble {cls} clearfix'>{msg}</div>", unsafe_allow_html=True)
 
-    user_input=st.text_area("Your message:","",key="chat_input",height=80)
-    if st.button("Send") and user_input.strip():
-        add_message("user", user_input)
-        # Generate ML/Stats-focused analysis if a dataset or file uploaded
-        last_upload=None
-        if st.session_state["uploads"]: last_upload=st.session_state["uploads"][-1]
-        if last_upload:
-            snippet=last_upload["content"] if isinstance(last_upload["content"], str) else last_upload["content"][:20000].decode("utf-8",errors="ignore")
-            file_type=last_upload["type"].lower()
-            response=generate_ml_stats_analysis(snippet,file_type)
-            add_message("assistant", response)
-        else:
-            add_message("assistant", f"Echo: {user_input}")
-        safe_rerun()
+    # Display chat messages
+    chat_box = st.empty()
+    def render_chat():
+        for msg in st.session_state["messages"]:
+            role = msg['role']
+            content = msg['content']
+            role_class = "msg-user" if role=="user" else "msg-bot"
+            chat_box.markdown(f"<div class='msg-bubble {role_class} clearfix'>{content}</div>", unsafe_allow_html=True)
+    render_chat()
 
+    # Input box
+    user_input = st.text_area("Your message:", "", key="chat_input", height=80)
+    if st.button("Send"):
+        if user_input.strip():
+            add_message("user", user_input)
+            render_chat()
+
+            # Generate assistant response
+            try:
+                with st.spinner("🤖 Assistant is typing..."):
+                    system_context = "You are a helpful, expert ML and Stats assistant. Provide concise explanations with LaTeX when useful."
+                    # Add uploaded file snippet
+                    file_context = ""
+                    if st.session_state["uploads"]:
+                        last_file = st.session_state["uploads"][-1]
+                        snippet = (last_file["content"][:3000].decode("utf-8", errors="ignore")
+                                   if isinstance(last_file["content"], (bytes, bytearray)) else str(last_file["content"])[:3000])
+                        file_context = f"\n\nContext from uploaded file ({last_file['name']}):\n{snippet}"
+
+                    # Build prompt
+                    conv_text = system_context + file_context + "\n\nConversation:\n"
+                    for msg in st.session_state["messages"][-8:]:
+                        conv_text += f"{msg['role']}: {msg['content']}\n"
+
+                    # Call Gemini
+                    model = genai.GenerativeModel(
+                        'gemini-2.5-flash',
+                        generation_config={
+                            'temperature': 0.2 if not st.session_state.get("verbose", False) else 0.7,
+                            'top_p': 0.8,
+                            'top_k': 40,
+                            'max_output_tokens': 2048,
+                        }
+                    )
+                    response = model.generate_content(conv_text)
+                    assistant_text = response.text if hasattr(response, "text") else "Sorry, could not generate a response."
+
+                    add_message("assistant", assistant_text)
+                    render_chat()
+            except Exception as e:
+                add_message("assistant", f"⚠️ Error generating response: {e}")
+                render_chat()
+
+    # Export
     st.divider()
     st.markdown("### Export Chat")
-    c1,c2=st.columns(2)
-    with c1: st.download_button("Download DOCX",export_chat_as_docx(st.session_state["messages"]),file_name="chat_export.docx")
-    with c2:
-        if PDF_AVAILABLE: st.download_button("Download PDF",export_chat_as_pdf(st.session_state["messages"]),file_name="chat_export.pdf")
-        else: st.info("PDF export unavailable (reportlab missing)")
+    col1, col2 = st.columns(2)
+    with col1:
+        docx_file = export_chat_as_docx(st.session_state["messages"])
+        st.download_button("Download DOCX", docx_file, file_name="chat_export.docx")
+    with col2:
+        if PDF_AVAILABLE:
+            pdf_file = export_chat_as_pdf(st.session_state["messages"])
+            st.download_button("Download PDF", pdf_file, file_name="chat_export.pdf")
+        else:
+            st.info("PDF export unavailable (reportlab missing)")
 
 st.markdown("---")
-st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. Responses follow Executive Summary → Statistical Analysis → ML Insights → Practice Problems → Quick Implementation Guide.</div>", unsafe_allow_html=True)
+st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. This demo contains stubbed and limited analysis.</div>", unsafe_allow_html=True)
