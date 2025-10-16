@@ -7,239 +7,16 @@ import pdfplumber
 import pandas as pd
 from docx import Document
 import numpy as np
-import json
-from datetime import datetime
 import io
 
-
-st.set_page_config(
-   page_title="Data Analytics Helper", 
-   layout="wide",
-   initial_sidebar_state="expanded",
-   menu_items={
-      'Get Help': 'https://github.com/yourusername/yourrepo',
-      'Report a bug': 'https://github.com/yourusername/yourrepo/issues',
-      'About': '# Data Analytics Helper\nPowered by Google Gemini'
-   }
-)
-
-st.markdown("""
-<style>
-    /* ===============================
-       CRIMSON DARK MODE THEME (DARKER SIDEBAR)
-       =============================== */
-
-    :root {
-        --primary-color: #ff6b6b;       /* Main accent red for buttons */
-        --primary-dark: #ff4b4b;        /* Slightly darker red accent */
-        --sidebar-bg: #8b0000;          /* Dark red sidebar (was light red) */
-        --sidebar-bg-dark: #660000;     /* Bottom gradient */
-        --main-bg: #2b2b2b;             /* Main page dark grey */
-        --widget-bg: #3a3a3a;           /* Widget background */
-        --text-color: #ffffff;          /* White text for main area */
-        --sidebar-text: #000000;        /* Black text inside sidebar */
-        --sidebar-border: #000000;      /* Black border for sidebar items */
-        --hover-bg: #444444;            /* Hover effect for dark areas */
-    }
-
-    /* Hide Streamlit branding */
-    #MainMenu, footer {visibility: hidden;}
-    header {visibility: visible;}  /* Keep header for sidebar toggle */
-
-    /* Sidebar toggle always visible */
-    [data-testid="collapsedControl"] {
-        visibility: visible !important;
-        opacity: 1 !important;
-        position: fixed !important;
-        top: 1rem !important;
-        left: 1rem !important;
-        z-index: 9999 !important;
-        background: var(--widget-bg) !important;
-        border-radius: 8px !important;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-
-    /* Main container */
-    .block-container {
-        background-color: var(--main-bg);
-        color: var(--text-color);
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1400px;
-    }
-
-    /* Text and widgets */
-    .stMarkdown, .stText, .stTextInput, .stSelectbox {
-        color: var(--text-color) !important;
-    }
-
-    .stChatMessage {
-        background-color: var(--widget-bg) !important;
-        color: var(--text-color) !important;
-        padding: 1.2rem;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    .stChatInput {
-        border-radius: 25px;
-        border: 2px solid #555;
-        background-color: var(--widget-bg);
-        color: var(--text-color);
-    }
-
-    /* Buttons */
-    .stButton button {
-        border-radius: 10px;
-        font-weight: 500;
-        border: none;
-        padding: 0.6rem 1.5rem;
-        transition: all 0.3s ease;
-        background-color: var(--primary-color) !important;
-        color: var(--text-color) !important;
-    }
-
-    .stButton button:hover {
-        background-color: var(--primary-dark) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
-    }
-
-    /* File uploader */
-    [data-testid="stFileUploader"] {
-        border: 2px dashed var(--primary-color);
-        border-radius: 15px;
-        padding: 25px;
-        background: var(--widget-bg) !important;
-        color: var(--text-color) !important;
-    }
-
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 10px 10px 0 0;
-        padding: 10px 20px;
-        font-weight: 500;
-        background-color: var(--hover-bg);
-        color: var(--text-color);
-    }
-
-    /* Metrics */
-    [data-testid="stMetricValue"] {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary-color) !important;
-    }
-
-    /* Dataframes */
-    .dataframe {
-        border-radius: 10px;
-        overflow: hidden;
-        background-color: var(--widget-bg);
-        color: var(--text-color);
-    }
-
-    /* Boxes */
-    .stSuccess, .stInfo, .stWarning {
-        border-radius: 10px;
-        padding: 1rem;
-        background-color: var(--widget-bg) !important;
-        color: var(--text-color) !important;
-    }
-
-    /* Expanders */
-    .streamlit-expanderHeader {
-        font-weight: 600;
-        font-size: 1.1rem;
-        border-radius: 8px;
-        background-color: var(--widget-bg) !important;
-        color: var(--text-color) !important;
-    }
-
-    /* Progress bar */
-    .stProgress > div > div {
-        border-radius: 10px;
-        background-color: var(--primary-color) !important;
-    }
-
-    /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-dark) 100%) !important;
-        color: var(--sidebar-text) !important;
-        border-right: 2px solid var(--sidebar-border) !important;
-    }
-
-    /* Sidebar text */
-    [data-testid="stSidebar"] * {
-        color: var(--sidebar-text) !important;
-    }
-
-    /* Sidebar headers */
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] h4 {
-        color: var(--sidebar-text) !important;
-    }
-
-    /* Sidebar markdown */
-    [data-testid="stSidebar"] .stMarkdown {
-        color: var(--sidebar-text) !important;
-    }
-
-    /* Sidebar buttons */
-    [data-testid="stSidebar"] button {
-        background-color: white !important;
-        color: var(--sidebar-text) !important;
-        border: 2px solid var(--sidebar-border) !important;
-        border-radius: 8px;
-    }
-
-    [data-testid="stSidebar"] button:hover {
-        background-color: var(--sidebar-border) !important;
-        color: white !important;
-        border: 2px solid white !important;
-    }
-
-    /* Sidebar metrics */
-    [data-testid="stSidebar"] [data-testid="stMetricValue"],
-    [data-testid="stSidebar"] [data-testid="stMetricLabel"] {
-        color: var(--sidebar-text) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-
+st.set_page_config(page_title="Data Analytics Helper", layout="wide")
 
 st.title("Data Analytics Chatbot 🤖")
 st.markdown("AI-Assistant to help simplify complex topics about data! Upload lecture notes, datasets, or statistical analysis documents to get simplified insights, practice problems, and implementation tips!")
 
-def save_chat_history():
-    """Save chat history to browser storage via session state"""
-    if "messages" in st.session_state and st.session_state.messages:
-        # Store in session state with timestamp
-        st.session_state["last_saved"] = datetime.now().isoformat()
-
-def load_chat_history():
-    """Load chat history from session state"""
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = []
-    return st.session_state["messages"]
-
-def export_chat_history():
-    """Export chat history as JSON"""
-    history = {
-        "exported_at": datetime.now().isoformat(),
-        "total_messages": len(st.session_state.messages),
-        "conversations": st.session_state.messages
-    }
-    return json.dumps(history, indent=2)
-
 # Session state initialization
 def get_gemini_api_key():
-   return st.session_state.get("gemini_api_key", "")
+    return st.session_state.get("gemini_api_key", "")
 
 def set_gemini_api_key(api_key):
     st.session_state["gemini_api_key"] = api_key
@@ -300,11 +77,11 @@ def generate_ml_stats_analysis(content, file_type, stats_analysis=None):
             prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this dataset and provide expert guidance.
 
 Dataset Information:
-{content[:25000]}
+{content[:20000]}
 
 Provide a focused analysis with these sections (be concise but insightful):
 
-1. **EXECUTIVE SUMMARY** (200-300 words):
+1. **EXECUTIVE SUMMARY** (150 words):
    - Dataset overview and potential use cases
    - Key statistical insights
    - Recommended ML approaches
@@ -321,10 +98,10 @@ Provide a focused analysis with these sections (be concise but insightful):
    - Expected challenges
 
 4. **PRACTICE PROBLEMS** (10 questions):
-   - Statistical fundamentals (4)
-   - ML algorithm selection (2)
+   - Statistical fundamentals (2)
+   - ML algorithm selection (3)
    - Model evaluation (3)
-   - Advanced concepts (1)
+   - Advanced concepts (2)
 
 5. **QUICK IMPLEMENTATION GUIDE**:
    - Python code starter template
@@ -336,7 +113,7 @@ Provide a focused analysis with these sections (be concise but insightful):
             prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this academic material and create a focused study guide.
 
 Content to analyze:
-{content[:40000]}
+{content[:20000]}
 
 Provide a concise analysis with these sections:
 
@@ -469,77 +246,70 @@ Categorical Feature Distribution (Top Categories):
         st.error(f"Error reading file: {e}")
         return None, None, None, None
 
-# Load chat history
-load_chat_history()
-
-# Header with gradient
-st.markdown("""
-<div style='text-align: center; padding: 2rem 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            border-radius: 15px; margin-bottom: 2rem; color: white;'>
-    <h1 style='margin: 0; font-size: 2.5rem;'>🤖 ML & Stats Study Expert</h1>
-    <p style='margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 0.9;'>
-        Your AI-powered learning companion • Powered by Google Gemini
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
 # API Key Setup
 if not get_gemini_api_key():
-   st.info("🎉 **100% FREE!** No payment required - just get a free API key")
-   col1, col2, col3 = st.columns([1, 2, 1])
-   with col2:
-      api_key = st.text_input(
-         "Enter your FREE Gemini API Key:", 
-         type="password", 
-         placeholder="Paste your API key here...",
-         help="Get yours free at aistudio.google.com"
-      )
-      if st.button("🚀 Start Learning", type="primary", use_container_width=True):
-         if api_key and api_key.startswith("AI") and len(api_key) > 30:
-            set_gemini_api_key(api_key)
-            st.success("✅ API Key activated!")
-            st.balloons()
-            st.rerun()
-         else:
-            st.error("Please enter a valid API key")
-        
-      with st.expander("📖 How to get your FREE Gemini API Key (takes 30 seconds)"):
-         st.markdown("""
-         ### Step-by-Step:
-         1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-         2. Sign in with your Google account
-         3. Click **"Create API Key"**
-         4. Copy the key and paste it above
-        
-         ### Free Tier Limits:
-         - ✅ **1,500 requests per day** (more than enough!)
-         - ✅ **15 requests per minute**
-         - ✅ **1 million tokens per minute**
-         - ✅ **No credit card required**
-         - ✅ **Never expires**
-           
-         Perfect for us!
-         """)
+    st.success("🎉 **100% FREE!** No payment required - just get a free API key")
     
-   st.stop()
-
-# Configure Gemini
-genai.configure(api_key=get_gemini_api_key())
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        api_key = st.text_input("Enter your FREE Gemini API Key:", type="password", key="api_input")
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Set API Key", type="primary"):
+            if api_key:
+                set_gemini_api_key(api_key)
+                st.success("✅ API Key set successfully!")
+                st.rerun()
+            else:
+                st.error("Please enter a valid API key.")
+    
+    with st.expander("📖 How to get your FREE Gemini API Key (takes 30 seconds)"):
+        st.markdown("""
+        ### Step-by-Step:
+        1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+        2. Sign in with your Google account
+        3. Click **"Create API Key"**
+        4. Copy the key and paste it above
+        
+        ### Free Tier Limits:
+        - ✅ **1,500 requests per day** (more than enough!)
+        - ✅ **15 requests per minute**
+        - ✅ **1 million tokens per minute**
+        - ✅ **No credit card required**
+        - ✅ **Never expires**
+        
+        Perfect for us!
+        """)
+    
+    st.stop()
 
 # Main Application
 st.divider()
 
 # File Upload Section
-st.markdown("### 📁 Upload Study Materials")
+st.header("📁 Upload Materials Below")
 
-uploaded_file = st.file_uploader(
-    "Drop your file here or click to browse",
-    type=['txt', 'pdf', 'docx', 'csv', 'xlsx'],
-    help="Supports: PDFs, Word docs, Excel, CSV, and text files"
-)
+col1, col2 = st.columns([2, 1])
 
+with col1:
+    uploaded_file = st.file_uploader(
+        "Choose a file to analyze",
+        type=['txt', 'pdf', 'docx', 'csv', 'xlsx'],
+        help="Upload ML research papers, lecture notes, datasets, or statistical analysis documents"
+    )
+
+with col2:
+    st.markdown("### 📚 Material Types")
+    st.markdown("""
+    - 📊 **Datasets**: Get analysis recommendations
+    - 📄 **Research Papers**: Extract key insights
+    - 📝 **Lecture Notes**: Master concepts
+    - 📈 **Statistical Reports**: Deep analysis
+    """)
+
+# Process uploaded file
 if uploaded_file is not None:
-    with st.spinner("🔍 Analyzing your file..."):
+    with st.spinner("🔍 Performing advanced analysis..."):
         result = extract_text_from_file(uploaded_file)
         
         if len(result) == 4:
@@ -549,102 +319,145 @@ if uploaded_file is not None:
             stats_analysis = None
         
         if file_content:
-            st.success(f"✅ Loaded: **{uploaded_file.name}** ({file_type.upper()})")
+            st.success(f"✅ Successfully loaded: **{uploaded_file.name}** ({file_type.upper()})")
             
             # Enhanced data preview for datasets
             if dataframe is not None:
-                tab1, tab2, tab3 = st.tabs(["📊 Preview", "📈 Statistics", "💡 Insights"])
+                tab1, tab2, tab3 = st.tabs(["📊 Data Preview", "📈 Statistics", "🔍 Quick Insights"])
                 
                 with tab1:
                     st.dataframe(dataframe.head(50), use_container_width=True)
                     
                 with tab2:
                     col1, col2, col3, col4 = st.columns(4)
-                    col1.metric("Rows", f"{len(dataframe):,}")
-                    col2.metric("Columns", len(dataframe.columns))
-                    col3.metric("Missing", f"{dataframe.isnull().sum().sum():,}")
-                    col4.metric("Size", f"{stats_analysis['basic_stats']['memory_usage']:.1f} MB")
+                    col1.metric("Total Rows", f"{len(dataframe):,}")
+                    col2.metric("Total Columns", len(dataframe.columns))
+                    col3.metric("Missing Values", f"{dataframe.isnull().sum().sum():,}")
+                    col4.metric("Memory", f"{stats_analysis['basic_stats']['memory_usage']:.1f} MB")
                     
+                    # Show detailed statistics
                     numerical_cols = dataframe.select_dtypes(include=[np.number]).columns.tolist()
                     if numerical_cols:
-                        st.markdown("#### Numerical Features")
+                        st.subheader("Numerical Features")
                         st.dataframe(dataframe[numerical_cols].describe(), use_container_width=True)
+                        
+                        # Correlation heatmap info
+                        if len(numerical_cols) > 1:
+                            st.subheader("Feature Correlations")
+                            st.dataframe(stats_analysis['correlations'], use_container_width=True)
                 
                 with tab3:
-                    st.markdown("#### 🎯 Quick Insights")
-                    if len(numerical_cols) > 0:
-                        st.info("**Suggested Tasks**: Regression, Clustering, Time Series")
+                    st.markdown("### 🎯 Quick ML Insights")
                     
+                    # Suggest problem type
+                    if len(numerical_cols) > 0:
+                        st.info("**Suggested ML Tasks**: Regression, Time Series Analysis, Clustering")
+                    
+                    # Check for class imbalance
                     categorical_cols = dataframe.select_dtypes(include=['object']).columns.tolist()
                     if categorical_cols:
                         for col in categorical_cols[:3]:
                             value_counts = dataframe[col].value_counts()
                             if len(value_counts) < 10:
-                                st.success(f"**{col}**: Good classification target ({len(value_counts)} classes)")
+                                st.warning(f"**{col}**: Potential classification target (classes: {len(value_counts)})")
             
-            # Generate analysis
+            # Generate expert ML/Stats analysis
             st.divider()
-            st.markdown("### 🎓 AI-Generated Study Guide")
+            st.header("🎓 Chatbot Analysis")
             
-            with st.spinner("⚡ Generating comprehensive analysis... (10-30 seconds)"):
-                analysis = generate_ml_stats_analysis(file_content, file_type, stats_analysis)
+            # Add progress indicator
+            progress_text = "⚡ Analyzing your file... may take a moment"
+            with st.spinner(progress_text):
+                analysis = generate_ml_stats_analysis(
+                    file_content, 
+                    file_type,
+                    stats_analysis
+                )
             
             if analysis:
                 st.markdown(analysis)
                 
-                # Download button
-                col1, col2, col3 = st.columns([1, 2, 1])
+                # Download options
+                st.divider()
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.download_button(
+                        label="📥 Download Study Guide (Text)",
+                        data=analysis,
+                        file_name=f"{uploaded_file.name}_ml_stats_guide.txt",
+                        mime="text/plain"
+                    )
                 with col2:
                     st.download_button(
-                        "📥 Download Study Guide",
+                        label="📥 Download Study Guide (Markdown)",
                         data=analysis,
-                        file_name=f"{uploaded_file.name}_study_guide.md",
-                        mime="pdf/markdown",
-                        use_container_width=True
+                        file_name=f"{uploaded_file.name}_ml_stats_guide.md",
+                        mime="text/markdown"
                     )
+        else:
+            st.error("❌ Could not extract content from the file.")
 
 # Advanced ML/Stats Chatbot
 st.divider()
 st.header("💬 Ask Questions!")
 
-# Display chat history
-for message in st.session_state.messages:
-   with st.chat_message(message["role"]):
-      st.markdown(message["content"])
+# Initialize chat history FIRST
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
+
+# Add helpful tips above chat
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.markdown("*Ask anything about your uploaded materials or general ML/Stats concepts*")
+with col2:
+    if st.session_state.messages:
+        if st.button("🗑️ Clear Chat", key="clear_top"):
+            st.session_state.messages = []
+            st.rerun()
+
+# Display chat messages
+for message in st.session_state["messages"]:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Show helpful starter questions if no messages yet
+if not st.session_state.messages and uploaded_file:
+    st.info("💡 **Suggested questions to get started:**\n- What are the main concepts in this file?\n- Can you explain [concept] in simpler terms?\n- What practice problems can you give me?\n- How would I implement this in Python?")
+elif not st.session_state.messages:
+    st.info("💡 **Try asking:**\n- Explain the main concepts from this file in simple terms\n- Give me 5 true/false questions on [topic] with answers\n- Create 3 practice problems about [concept] and show solutions\n- Explain [specific algorithm] like I'm 5 years old\n- The more specific the better!")
 
 # Chat input
-if prompt := st.chat_input("💭 Ask about ML algorithms, statistics, or your uploaded files..."):
-    # Add user message
+if prompt := st.chat_input("Ask about algorithms, statistics, math, or implementation..."):
+    # Add to session state first
     st.session_state.messages.append({"role": "user", "content": prompt})
     
+    # Show user message
     with st.chat_message("user"):
         st.markdown(prompt)
     
-    # Generate response
+    # Show assistant response with clear loading indicator
     with st.chat_message("assistant"):
+        # Create placeholder for the response
         response_placeholder = st.empty()
         
+        # Show a friendly loading message
         with response_placeholder.container():
-            st.markdown("### 🤔 Thinking...")
+            st.markdown("### 🤔 Processing your question...")
             st.progress(0.5)
-            st.caption("⏳ Processing your question...")
+            st.caption("⏳ This might take a moment")
         
         try:
+            # Use faster model with optimized settings
             model = genai.GenerativeModel(
                 'gemini-2.5-flash',
                 generation_config={
                     'temperature': 0.7,
                     'top_p': 0.8,
                     'top_k': 40,
-                    'max_output_tokens': 4096,
-                },
-                safety_settings={
-                    'HARASSMENT': 'block_none',
-                    'HATE_SPEECH': 'block_none',
-                    'SEXUALLY_EXPLICIT': 'block_none',
-                    'DANGEROUS_CONTENT': 'block_none'
+                    'max_output_tokens': 2048,
                 }
             )
+            
             # Enhanced system context for ML/Stats expertise
             context_message = """You are a world-class Machine Learning and Statistics expert with PhD-level knowledge. Provide clear, accurate, and insightful answers.
 
@@ -656,30 +469,30 @@ When answering:
 5. Suggest further resources when appropriate"""
             
             # Add file context if available (limit to prevent slowdown)
-            if uploaded_file and file_content:
-                context += f"\n\nFile context: {file_content[:3000]}"
+            file_context = ""
+            if 'uploaded_file' in locals() and uploaded_file and 'file_content' in locals() and file_content:
+                file_context = f"\n\nContext from uploaded file ({uploaded_file.name}):\n{file_content[:3000]}"
             
-            full_prompt = f"{context}\n\n"
+            # Build conversation for Gemini
+            full_prompt = f"{context_message}{file_context}\n\nConversation:\n"
             for msg in st.session_state.messages:
-                full_prompt += f"{msg['role']}: {msg['content']}\n"
+                full_prompt += f"\n{msg['role']}: {msg['content']}"
             
             response = model.generate_content(full_prompt)
+            assistant_response = response.text
             
-            if not response.candidates or not response.candidates[0].content.parts:
-                assistant_response = "Try rephrasing your question or breaking it into smaller parts."
-            else:
-                assistant_response = response.text
-            
+            # Replace loading message with actual response
+            # Clear loading indicator and show response
             response_placeholder.empty()
             response_placeholder.markdown(assistant_response)
             st.session_state.messages.append({"role": "assistant", "content": assistant_response})
             
-            # Auto-save after each exchange
-            save_chat_history()
-            
         except Exception as e:
             response_placeholder.empty()
-            response_placeholder.error(f"❌ Error: {str(e)}")
+            with response_placeholder.container():
+                st.warning(f"⚠️ {str(e)}")
+                st.info("💡 **Tips...")
+            st.info("💡 Tip: Try rephrasing your question or check your API key.")
     
     # Force rerun to show the new message properly
     st.rerun()
@@ -696,76 +509,40 @@ with col2:
 
 # Enhanced sidebar
 with st.sidebar:
-    st.markdown("### 🎯 Quick Actions")
+    st.header("🎯 Reference & Resource Hub")
     
-    # Chat history management
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 Export Chat", use_container_width=True):
-            if st.session_state.messages:
-                chat_json = export_chat_history()
-                st.download_button(
-                    "📥 Download",
-                    chat_json,
-                    file_name=f"chat_history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                    mime="application/json",
-                    use_container_width=True
-                )
-            else:
-                st.info("No chat history yet!")
-    
-    with col2:
-        if st.button("🗑️ Clear Chat", use_container_width=True):
-            st.session_state.messages = []
-            st.success("Chat cleared!")
-            st.rerun()
+    st.success("💰 **100% FREE** - Powered by Google Gemini")
+    st.info("📊 **1,500 requests/day** available")
     
     st.divider()
     
-    # Stats
-    st.markdown("### 📊 Session Stats")
-    total_messages = len(st.session_state.messages)
-    user_messages = sum(1 for m in st.session_state.messages if m["role"] == "user")
+    st.markdown("""
+    ### 📖 Quick Reference
     
-    col1, col2 = st.columns(2)
-    col1.metric("Messages", total_messages)
-    col2.metric("Questions", user_messages)
+    **Core ML Algorithms:**
+    - Linear/Logistic Regression
+    - Decision Trees & Random Forests
+    - SVM, KNN, Naive Bayes
+    - Neural Networks & Deep Learning
+    - Clustering (K-means, DBSCAN)
+    - Dimensionality Reduction (PCA, t-SNE)
     
-    if "last_saved" in st.session_state:
-        st.caption(f"Last active: {st.session_state['last_saved'][:19]}")
+    **Statistical Methods:**
+    - Hypothesis Testing (t-test, ANOVA, χ²)
+    - Regression Analysis
+    - Bayesian Inference
+    - Time Series Analysis
+    - Experimental Design
     
-    st.divider()
+    **Key Concepts:**
+    - Bias-Variance Tradeoff
+    - Cross-Validation
+    - Regularization (L1/L2)
+    - Feature Engineering
+    - Ensemble Methods
+    - Gradient Descent
+    """)
     
-    # Quick Reference
-    st.markdown("### 📚 Quick Reference")
-    with st.expander("🤖 ML Algorithms"):
-        st.markdown("""
-        - Linear/Logistic Regression
-        - Decision Trees & Random Forest
-        - SVM, KNN, Naive Bayes
-        - Neural Networks
-        - K-means, DBSCAN
-        - PCA, t-SNE
-        """)
-    
-    with st.expander("📈 Statistics"):
-        st.markdown("""
-        - t-test, ANOVA, χ²
-        - Regression Analysis
-        - Bayesian Inference
-        - Time Series
-        - A/B Testing
-        """)
-    
-    with st.expander("💡 Pro Tips"):
-        st.markdown("""
-        - Start with simple questions
-        - Upload one file at a time
-        - Break complex topics down
-        - Ask for examples
-        - Request practice problems
-        """)
-
     st.divider()
     
     st.markdown("""
@@ -784,12 +561,3 @@ with st.sidebar:
         for key in list(st.session_state.keys()):
             if key != 'gemini_api_key':
                 del st.session_state[key]
-        st.rerun()
-
-st.divider()
-st.markdown("""
-<div style='text-align: center; color: #666; padding: 1rem;'>
-    <p>Made with ❤️ for ML & Stats students • Powered by Google Gemini 2.5 Flash</p>
-    <p style='font-size: 0.9rem;'>💡 Tip: Your chat history persists during this session. Export it before closing!</p>
-</div>
-""", unsafe_allow_html=True)
