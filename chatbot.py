@@ -378,11 +378,19 @@ if nav == "Uploads":
     )
     
     if uploaded_file:
+        # LOADING BAR START: File Reading
+        st.markdown("---")
+        progress_text = "🔍 Reading and analyzing file structure..."
+        progress_bar = st.progress(0, text=progress_text)
         
-        # Check if the file is truly new/different, otherwise Streamlit re-upload won't trigger the file object to change.
-        # However, since we want to allow overwriting, we process it immediately.
-        with st.spinner("🔍 Performing advanced analysis..."):
+        with st.spinner("Processing file..."):
+            progress_bar.progress(25, text="Extracting content and analyzing structure...")
             file_content, file_type, df, stats_analysis = extract_text_from_file(uploaded_file)
+            progress_bar.progress(75, text="Building statistical summary...")
+        
+        # LOADING BAR END
+        progress_bar.empty()
+        st.markdown("---")
         
         if file_content:
             # Store the results in session state
@@ -418,12 +426,21 @@ elif nav == "Analysis":
         # Check if the detailed analysis has been run before
         if st.session_state["generated_analysis"] is None:
             
-            with st.spinner("⚡ Generating comprehensive expert report..."):
+            # LOADING BAR START: Report Generation
+            progress_text = "⚡ Generating comprehensive expert report from Gemini (this takes 30-60 seconds)..."
+            progress_bar = st.progress(0, text=progress_text)
+            
+            with st.spinner("Generating Report..."):
+                progress_bar.progress(30, text="Sending context to Gemini...")
                 analysis_result = generate_ml_stats_analysis(
                     st.session_state["current_file_context"], 
                     "csv" if st.session_state["current_df"] is not None else "doc", # Simple type for prompt logic
                     st.session_state["current_stats"]
                 )
+                progress_bar.progress(80, text="Receiving and formatting response...")
+            
+            # LOADING BAR END
+            progress_bar.empty()
             
             if analysis_result:
                 st.session_state["generated_analysis"] = analysis_result
@@ -525,7 +542,15 @@ else:
             add_message("user", user_prompt)
             
             # 2. Get bot response
+            # Add a temporary placeholder for the loading bar/spinner within the chat context
+            temp_response_placeholder = st.empty()
+            with temp_response_placeholder.container():
+                st.markdown("### 🤔 Processing your question...")
+                progress_bar = st.progress(0, text="Waiting for Gemini response...")
+                
+            
             with st.spinner("Gemini is analyzing..."):
+                progress_bar.progress(30, text="Sending conversation history to Gemini...")
                 
                 # Core Gemini Logic for Chat
                 model = genai.GenerativeModel(
@@ -558,10 +583,15 @@ When answering:
                 full_prompt = f"{context_message}{file_context}\n\nConversation:\n{conversation_history}\n\nassistant:"
                 
                 try:
+                    progress_bar.progress(60, text="Generating response...")
                     response = model.generate_content(full_prompt)
                     bot_response = response.text
+                    progress_bar.progress(100, text="Response received.")
                 except Exception as e:
                     bot_response = f"An error occurred: {e}. Check your API Key or try a simpler question."
+
+            # Clear the temporary loading placeholder
+            temp_response_placeholder.empty()
 
             # 3. Add bot message to state
             add_message("bot", bot_response)
@@ -571,3 +601,4 @@ When answering:
 
     st.markdown("---")
     st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. This demo is powered by Google Gemini.</div>", unsafe_allow_html=True)
+```eof
