@@ -12,7 +12,7 @@ import io
 
 st.set_page_config(
    page_title="Data Analytics Helper", 
-   layout="wide"
+   layout="wide",
    initial_sidebar_state="expanded",
    menu_items={
       'Get Help': 'https://github.com/yourusername/yourrepo',
