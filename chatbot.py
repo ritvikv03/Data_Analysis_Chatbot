@@ -118,6 +118,39 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
     }
+    
+    /* Sidebar text colors */
+    [data-testid="stSidebar"] * {
+        color: #262730 !important;
+    }
+    
+    /* Sidebar headers */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4 {
+        color: #0e1117 !important;
+    }
+    
+    /* Sidebar markdown text */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: #31333F !important;
+    }
+    
+    /* Sidebar buttons */
+    [data-testid="stSidebar"] button {
+        background-color: #667eea !important;
+        color: white !important;
+    }
+    
+    /* Sidebar metrics */
+    [data-testid="stSidebar"] [data-testid="stMetricValue"] {
+        color: #0e1117 !important;
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stMetricLabel"] {
+        color: #31333F !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -208,11 +241,11 @@ def generate_ml_stats_analysis(content, file_type, stats_analysis=None):
             prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this dataset and provide expert guidance.
 
 Dataset Information:
-{content[:20000]}
+{content[:25000]}
 
 Provide a focused analysis with these sections (be concise but insightful):
 
-1. **EXECUTIVE SUMMARY** (150 words):
+1. **EXECUTIVE SUMMARY** (200-300 words):
    - Dataset overview and potential use cases
    - Key statistical insights
    - Recommended ML approaches
@@ -229,10 +262,10 @@ Provide a focused analysis with these sections (be concise but insightful):
    - Expected challenges
 
 4. **PRACTICE PROBLEMS** (10 questions):
-   - Statistical fundamentals (2)
-   - ML algorithm selection (3)
+   - Statistical fundamentals (4)
+   - ML algorithm selection (2)
    - Model evaluation (3)
-   - Advanced concepts (2)
+   - Advanced concepts (1)
 
 5. **QUICK IMPLEMENTATION GUIDE**:
    - Python code starter template
