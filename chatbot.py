@@ -97,26 +97,6 @@ header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Example sidebar layout
-with st.sidebar:
-    st.title("Control Panel")
-    st.write("Use the options below to interact with the app.")
-
-    with st.expander("📊 Data Settings", expanded=False):
-        st.checkbox("Show raw data")
-        st.checkbox("Normalize values")
-
-    with st.expander("⚙️ Model Options", expanded=False):
-        st.radio("Select model:", ["Linear", "Tree", "Neural Net"])
-        st.slider("Learning rate", 0.01, 1.0, 0.1)
-
-    with st.expander("📁 Upload Section", expanded=False):
-        st.file_uploader("Upload your dataset", type=["csv", "xlsx"])
-
-st.write("### Main Page")
-st.write("This is your dark grey interface with a custom dark red sidebar.")
-
-
 # Session state initialization
 def get_gemini_api_key():
     return st.session_state.get("gemini_api_key", "")
