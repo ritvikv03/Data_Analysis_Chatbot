@@ -266,7 +266,7 @@ if not st.session_state["gemini_api_key"]:
         if st.button("Set API Key"):
             if api_key:
                 set_gemini_api_key(api_key)
-                st.success("✅ API Key set successfully!")
+                st.success("API Key set successfully!")
                 st.experimental_rerun()
             else:
                 st.error("Please enter a valid API key.")
@@ -288,7 +288,7 @@ else:
 # Sidebar (Navigation + Recent uploads)
 # -------------------------
 with st.sidebar:
-    st.title("🎯 Reference & Resource Hub")
+    st.title("Navigation Hub")
     nav = st.radio("Navigate to", ["Chat", "Uploads", "Reference", "Settings"], index=0)
     st.divider()
     st.header("Recent uploads")
@@ -328,7 +328,7 @@ st.caption("Upload lecture notes, datasets, or statistical analysis documents, t
 
 # NAV: Uploads page
 if nav == "Uploads":
-    st.header("📁 Upload Materials")
+    st.header("Upload Materials")
     st.markdown("Drop a file to upload. Supported: txt, pdf, docx, csv, xlsx")
     with st.form("upload_form", clear_on_submit=False):
         files = st.file_uploader("Choose files to analyze", accept_multiple_files=True, type=['txt','pdf','docx','csv','xlsx'])
@@ -382,7 +382,7 @@ if nav == "Uploads":
 
 # NAV: Reference
 elif nav == "Reference":
-    st.header("📖 Quick Reference")
+    st.header("Quick Reference")
     st.markdown("""
     **Core ML Algorithms**
     - Linear/Logistic Regression
@@ -395,11 +395,21 @@ elif nav == "Reference":
     st.divider()
     st.markdown("**Statistical Methods**\n- Hypothesis Testing\n- Regression Analysis\n- Time Series Analysis\n- Experimental Design")
     st.divider()
-    st.markdown("**Tips**\nUse specific prompts. Upload files for contextualized answers.")
+    st.markdown("""
+    **Key Concepts:**
+    - Bias-Variance Tradeoff
+    - Cross-Validation
+    - Regularization (L1/L2)
+    - Feature Engineering
+    - Ensemble Methods
+    - Gradient Descent
+    """)
+    st.divider()
+    st.markdown("**Tips**\nUse specific prompts in chat. Upload files for contextualized answers.")
 
 # NAV: Settings
 elif nav == "Settings":
-    st.header("⚙️ Settings & Preferences")
+    st.header("Settings & Preferences")
     verbose = st.checkbox("Enable verbose responses", value=False, key="verbose")
     autosummary = st.checkbox("Auto-summaries on upload", value=False, key="autosummary")
     st.markdown("Theme: ChatGPT-like (dark + green accent).")
@@ -411,7 +421,7 @@ elif nav == "Settings":
 
 # NAV: Chat (default)
 else:
-    st.header("💬 Ask Questions")
+    st.header("Ask Questions")
     st.markdown("Ask about uploaded materials or general ML/Stats concepts. Be specific for best results.")
 
     # Chat display + actions on right
