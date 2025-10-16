@@ -6,3 +6,7 @@ python-docx
 openpyxl
 numpy
 reportlab
+re
+matplotlib
+PIL
+io
