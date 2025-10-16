@@ -1,6 +1,3 @@
-# run 'pip install streamlit google-generativeai pdfplumber pandas python-docx openpyxl numpy' in terminal to install dependencies
-# run streamlit run chatbot.py in terminal to start the app
-
 # chatbot.py
 # Run:
 # pip install streamlit google-generativeai pdfplumber pandas python-docx openpyxl numpy reportlab
@@ -81,7 +78,6 @@ if "model_name" not in st.session_state:
     st.session_state["model_name"] = "gemini-2.5-flash"
 if "model_temperature" not in st.session_state:
     st.session_state["model_temperature"] = 0.7
-# New state for storing the full context string for the chat model
 if "current_file_context" not in st.session_state:
     st.session_state["current_file_context"] = ""
 if "current_file_name" not in st.session_state:
@@ -90,6 +86,8 @@ if "current_df" not in st.session_state:
     st.session_state["current_df"] = None
 if "current_stats" not in st.session_state:
     st.session_state["current_stats"] = None
+if "generated_analysis" not in st.session_state:
+    st.session_state["generated_analysis"] = None
 
 
 # -------------------------
@@ -334,7 +332,7 @@ else:
 # -------------------------
 with st.sidebar:
     st.title("Navigation Hub")
-    nav = st.radio("Navigate to", ["Chat", "Uploads", "Analysis", "Settings"], index=0) # Changed Reference to Analysis
+    nav = st.radio("Navigate to", ["Chat", "Uploads", "Analysis", "Settings"], index=0)
     st.divider()
     
     st.header("Current File")
@@ -351,6 +349,7 @@ with st.sidebar:
         st.session_state["current_file_name"] = ""
         st.session_state["current_df"] = None
         st.session_state["current_stats"] = None
+        st.session_state["generated_analysis"] = None # Clear cached analysis
         st.session_state["messages"] = []
         st.success("Context cleared.")
         safe_rerun()
@@ -359,7 +358,7 @@ with st.sidebar:
         st.success("Chat history cleared.")
         safe_rerun()
     st.divider()
-    st.markdown("<div class='kb-hint'>Tip: For best results, clear the loaded file before uploading a new one.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kb-hint'>Tip: The new file you upload will automatically replace the current one.</div>", unsafe_allow_html=True)
 
 # -------------------------
 # Main Pages
@@ -370,40 +369,42 @@ st.caption("Upload lecture notes, datasets, or statistical analysis documents, t
 # NAV Pages
 if nav == "Uploads":
     st.header("Upload Materials")
-    st.markdown("Drop a file to upload. Supported: txt, pdf, docx, csv, xlsx")
+    st.markdown("Drop a file to upload. Supported: txt, pdf, docx, csv, xlsx. Uploading a new file will overwrite the existing one.")
     
-    # Check if a file is already loaded
-    if st.session_state["current_file_name"]:
-        st.warning(f"File **{st.session_state['current_file_name']}** is already loaded. Clear it from the sidebar before uploading a new one.")
-    else:
-        uploaded_file = st.file_uploader(
-            "Choose file to analyze",
-            accept_multiple_files=False, 
-            type=['txt','pdf','docx','csv','xlsx']
-        )
+    uploaded_file = st.file_uploader(
+        "Choose file to analyze",
+        accept_multiple_files=False, 
+        type=['txt','pdf','docx','csv','xlsx']
+    )
+    
+    if uploaded_file:
         
-        if uploaded_file:
-            with st.spinner("🔍 Performing advanced analysis..."):
-                file_content, file_type, df, stats_analysis = extract_text_from_file(uploaded_file)
+        # Check if the file is truly new/different, otherwise Streamlit re-upload won't trigger the file object to change.
+        # However, since we want to allow overwriting, we process it immediately.
+        with st.spinner("🔍 Performing advanced analysis..."):
+            file_content, file_type, df, stats_analysis = extract_text_from_file(uploaded_file)
+        
+        if file_content:
+            # Store the results in session state
+            st.session_state["current_file_context"] = file_content
+            st.session_state["current_file_name"] = uploaded_file.name
+            st.session_state["current_df"] = df
+            st.session_state["current_stats"] = stats_analysis
+            st.session_state["generated_analysis"] = None # Invalidate cached analysis
+            st.session_state["messages"] = [] # Clear chat on new upload
             
-            if file_content:
-                # Store the results in session state
-                st.session_state["current_file_context"] = file_content
-                st.session_state["current_file_name"] = uploaded_file.name
-                st.session_state["current_df"] = df
-                st.session_state["current_stats"] = stats_analysis
-                st.session_state["messages"] = [] # Clear chat on new upload
-                
-                st.success(f"✅ File **{uploaded_file.name}** loaded and context extracted. Go to the **Analysis** tab to view the expert report or the **Chat** tab to ask questions.")
-                
-                # Optional: Show a quick summary after upload
-                if df is None:
-                    st.text_area("Document Preview (First 500 characters):", file_content[:500], height=150)
-                
-                # Rerun to update sidebar
-                safe_rerun()
+            st.success(f"✅ File **{uploaded_file.name}** loaded and context extracted. Go to the **Analysis** tab to view the expert report or the **Chat** tab to ask questions.")
+            
+            # Optional: Show a quick summary after upload
+            if df is None:
+                st.text_area("Document Preview (First 500 characters):", file_content[:500], height=150)
             else:
-                 st.error("❌ Could not extract content from the file.")
+                st.dataframe(df.head(5), use_container_width=True)
+            
+            # Rerun to update sidebar
+            safe_rerun()
+        else:
+             st.error("❌ Could not extract content from the file.")
 
 
 elif nav == "Analysis":
@@ -414,8 +415,8 @@ elif nav == "Analysis":
     else:
         st.subheader(f"Report for: {st.session_state['current_file_name']}")
         
-        # Check if the detailed analysis has been run before (optional caching)
-        if "generated_analysis" not in st.session_state or st.session_state.generated_analysis_file != st.session_state["current_file_name"]:
+        # Check if the detailed analysis has been run before
+        if st.session_state["generated_analysis"] is None:
             
             with st.spinner("⚡ Generating comprehensive expert report..."):
                 analysis_result = generate_ml_stats_analysis(
@@ -426,9 +427,8 @@ elif nav == "Analysis":
             
             if analysis_result:
                 st.session_state["generated_analysis"] = analysis_result
-                st.session_state["generated_analysis_file"] = st.session_state["current_file_name"]
                 
-        if "generated_analysis" in st.session_state:
+        if st.session_state["generated_analysis"]:
             st.markdown(st.session_state["generated_analysis"])
             
             st.divider()
@@ -506,28 +506,35 @@ else:
             else:
                 st.markdown(f"<div class='msg-bubble msg-bot clearfix'>{content}</div>", unsafe_allow_html=True)
     
-    # Input box and Send button
+    # Input box and Send button - Uses st.form for Enter Key Submission and auto-clear
     st.markdown("<br><br>", unsafe_allow_html=True)
-    with st.container():
-        user_input = st.text_area("Your message:", "", key="chat_input", height=80)
+    
+    # Use st.form for Enter key submission and auto-clear functionality
+    with st.form(key='chat_form', clear_on_submit=True):
+        # Use st.text_input for better chat experience and Enter key compatibility
+        user_prompt = st.text_input(
+            "Ask about algorithms, statistics, math, or implementation...",
+            key="user_input_key"
+        )
         
-        if st.button("Send", key="send_button", type="primary"):
-            user_prompt = user_input.strip()
-            if user_prompt:
-                # 1. Add user message to state
-                add_message("user", user_prompt)
+        # This button is what handles submission via click or Enter key
+        submitted = st.form_submit_button("Send", type="primary")
+
+        if submitted and user_prompt:
+            # 1. Add user message to state
+            add_message("user", user_prompt)
+            
+            # 2. Get bot response
+            with st.spinner("Gemini is analyzing..."):
                 
-                # 2. Get bot response
-                with st.spinner("Gemini is analyzing..."):
-                    
-                    # Core Gemini Logic for Chat
-                    model = genai.GenerativeModel(
-                        st.session_state["model_name"],
-                        generation_config={'temperature': st.session_state["model_temperature"], 'max_output_tokens': 2048}
-                    )
-                    
-                    # System Context (V2 Logic)
-                    context_message = """You are a world-class Machine Learning and Statistics expert with PhD-level knowledge. Provide clear, accurate, and insightful answers.
+                # Core Gemini Logic for Chat
+                model = genai.GenerativeModel(
+                    st.session_state["model_name"],
+                    generation_config={'temperature': st.session_state["model_temperature"], 'max_output_tokens': 2048}
+                )
+                
+                # System Context (V2 Logic)
+                context_message = """You are a world-class Machine Learning and Statistics expert with PhD-level knowledge. Provide clear, accurate, and insightful answers.
 
 When answering:
 1. Be concise and thorough but simple
@@ -535,34 +542,32 @@ When answering:
 3. Include relevant formulas when helpful in LaTeX format
 4. Give practical implementation advice
 5. If referring to the uploaded file, state the name of the file."""
-            
-                    # File Context (V2 Logic)
-                    file_context = ""
-                    if st.session_state["current_file_context"]:
-                        name = st.session_state["current_file_name"]
-                        file_context = f"\n\nContext from loaded file ({name}):\n{st.session_state['current_file_context'][:3000]}"
-                    
-                    # Build Conversation History
-                    conversation_history = ""
-                    for msg in st.session_state.messages:
-                        conversation_history += f"\n{msg['role']}: {msg['content']}"
-
-                    # Full Prompt
-                    full_prompt = f"{context_message}{file_context}\n\nConversation:\n{conversation_history}\n\nassistant:"
-                    
-                    try:
-                        response = model.generate_content(full_prompt)
-                        bot_response = response.text
-                    except Exception as e:
-                        bot_response = f"An error occurred: {e}. Check your API Key or try a simpler question."
-
-                # 3. Add bot message to state
-                add_message("bot", bot_response)
+        
+                # File Context (V2 Logic)
+                file_context = ""
+                if st.session_state["current_file_context"]:
+                    name = st.session_state["current_file_name"]
+                    file_context = f"\n\nContext from loaded file ({name}):\n{st.session_state['current_file_context'][:3000]}"
                 
-                # 4. Clear input and rerun
-                safe_rerun()
-            else:
-                st.warning("Please enter a message.")
+                # Build Conversation History
+                conversation_history = ""
+                for msg in st.session_state.messages:
+                    conversation_history += f"\n{msg['role']}: {msg['content']}"
+
+                # Full Prompt
+                full_prompt = f"{context_message}{file_context}\n\nConversation:\n{conversation_history}\n\nassistant:"
+                
+                try:
+                    response = model.generate_content(full_prompt)
+                    bot_response = response.text
+                except Exception as e:
+                    bot_response = f"An error occurred: {e}. Check your API Key or try a simpler question."
+
+            # 3. Add bot message to state
+            add_message("bot", bot_response)
+            
+            # 4. Rerun to display new messages
+            safe_rerun()
 
     st.markdown("---")
     st.markdown("<div style='color:#98a0b6; font-size:12px;'>Tip: Upload files and ask specific questions. This demo is powered by Google Gemini.</div>", unsafe_allow_html=True)
