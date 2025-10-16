@@ -272,18 +272,33 @@ if not st.session_state["gemini_api_key"]:
     st.sidebar.success("💰 100% FREE - Powered by Google Gemini")
     st.sidebar.info("📊 1,500 requests/day available")
     st.header("Set up your Gemini API Key")
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        api_key = st.text_input("Enter your Gemini API Key:", type="password", key="api_input")
-    with col2:
-        if st.button("Set API Key"):
-            if api_key:
-                set_gemini_api_key(api_key)
-                st.success("API Key set successfully!")
-                st.experimental_rerun()
-            else:
-                st.error("Please enter a valid API key.")
-    with st.expander("📖 How to get your FREE Gemini API Key"):
+    st.markdown("""
+<style>
+.api-key-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.api-key-row input {
+    flex: 1;
+}
+</style>
+""", unsafe_allow_html=True)
+
+api_key_col1, api_key_col2 = st.columns([4, 1])
+with api_key_col1:
+    api_key = st.text_input("Enter your Gemini API Key:", type="password", key="api_input")
+
+with api_key_col2:
+    st.markdown("<br>", unsafe_allow_html=True)  # small vertical alignment tweak
+    if st.button("Set API Key"):
+        if api_key:
+            set_gemini_api_key(api_key)
+            st.success("API Key set successfully!")
+            safe_rerun()
+        else:
+            st.error("Please enter a valid API key.")
+    with st.expander("How to get your FREE Gemini API Key"):
         st.markdown("""
         1. Go to Google AI Studio (https://aistudio.google.com/app/apikey)
         2. Sign in with Google
@@ -319,10 +334,10 @@ with st.sidebar:
     st.markdown("### Quick Actions")
     if st.button("Clear recent uploads"):
         st.session_state["uploads"] = []
-        st.experimental_rerun()
+        safe_rerun()
     if st.button("Clear chat"):
         st.session_state["messages"] = []
-        st.experimental_rerun()
+        safe_rerun()
     st.divider()
     st.markdown("### Shortcuts")
     st.markdown("<div class='kb-hint'>Press Enter to send (Shift+Enter for newline). Drag & drop files to upload.</div>", unsafe_allow_html=True)
@@ -430,7 +445,7 @@ elif nav == "Settings":
         gemkey = st.session_state.get("gemini_api_key", "")
         st.session_state.clear()
         st.session_state["gemini_api_key"] = gemkey
-        st.experimental_rerun()
+        safe_rerun()
 
 # NAV: Chat (default)
 else:
@@ -461,7 +476,7 @@ else:
             add_message("user", prompt)
 
             # Display user message immediately (so UI shows instantly)
-            st.experimental_rerun()  # rerun to render user message and then assistant will generate below
+            safe_rerun()  # rerun to render user message and then assistant will generate below
 
     with right_col:
         st.markdown("### Actions")
@@ -493,7 +508,7 @@ else:
                 if hasattr(st, "rerun"):
                     st.rerun()
                 else:
-                    st.experimental_rerun()
+                    safe_rerun()
             except Exception:
                 pass  # Prevents app crash if rerun not supported
     
@@ -518,7 +533,7 @@ else:
 
         # Show assistant typing indicator and produce a reply (using Gemini)
         add_message("assistant", "⏳ Generating response...")  # placeholder to show typing
-        st.experimental_rerun()
+        safe_rerun()
 
     # If placeholder is present, replace with model response (separate rerun)
     # Find the first assistant placeholder that equals the exact typing placeholder
@@ -559,11 +574,11 @@ Provide concise explanations, include formulas in LaTeX when useful, and practic
 
                     # Replace the placeholder assistant message with the real content
                     st.session_state["messages"][i]["content"] = assistant_text
-                    st.experimental_rerun()
+                    safe_rerun()
 
             except Exception as e:
                 st.session_state["messages"][i]["content"] = f"⚠️ Error generating response: {e}"
-                st.experimental_rerun()
+                safe_rerun()
 
 # Footer
 st.markdown("---")
