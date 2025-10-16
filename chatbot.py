@@ -555,7 +555,7 @@ else:
                 # Core Gemini Logic for Chat
                 model = genai.GenerativeModel(
                     st.session_state["model_name"],
-                    generation_config={'temperature': st.session_state["model_temperature"], 'max_output_tokens': 2048}
+                    generation_config={'temperature': st.session_state["model_temperature"], 'max_output_tokens': 5000}
                 )
                 
                 # System Context (V2 Logic)
