@@ -16,183 +16,105 @@ st.markdown("AI-Assistant to help simplify complex topics about data! Upload lec
 
 st.markdown("""
 <style>
-/* ====== GLOBAL ====== */
-html, body, [class*="css"] {
-    font-family: 'Inter', 'Helvetica Neue', sans-serif;
-    background-color: #1E1E1E !important; /* dark gray main background */
-    color: #f5f5f5 !important;
-}
+/* Hide Streamlit branding */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
 
-/* ====== HIDE STREAMLIT BRANDING ====== */
-#MainMenu, footer, header {visibility: hidden;}
-
-/* ====== PAGE CONTAINER ====== */
+/* Better spacing and max width */
 .block-container {
-    padding-top: 2rem !important;
-    padding-bottom: 2rem !important;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     max-width: 1400px;
 }
 
-/* ====== UW–MADISON COLOR THEME ====== */
-:root {
-    --madison-red: #C5050C;
-    --madison-dark-red: #9B0000;
-    --madison-gray: #282828;
-    --madison-light-gray: #E6E6E6;
-    --madison-black: #000000;
-    --madison-white: #FFFFFF;
-}
-
-/* ====== SIDEBAR ====== */
-[data-testid="stSidebar"] {
-    background: var(--madison-dark-red);
-    color: var(--madison-white) !important;
-    border-right: 3px solid black;
-}
-
-[data-testid="stSidebar"] * {
-    color: var(--madison-white) !important;
-}
-
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 {
-    color: var(--madison-white) !important;
-    font-weight: 700;
-}
-
-[data-testid="stSidebar"] button {
-    background-color: var(--madison-white) !important;
-    color: var(--madison-dark-red) !important;
-    border: 2px solid var(--madison-black);
-    border-radius: 8px;
-    transition: 0.3s;
-}
-
-[data-testid="stSidebar"] button:hover {
-    background-color: var(--madison-black) !important;
-    color: var(--madison-white) !important;
-    transform: translateY(-1px);
-}
-
-/* Make the sidebar toggle button always visible */
-[data-testid="collapsedControl"] {
-    background-color: var(--madison-dark-red) !important;
-    border: 2px solid var(--madison-black) !important;
-    color: var(--madison-white) !important;
-    opacity: 1 !important;
-}
-
-/* ====== MAIN CONTENT ====== */
-section.main > div {
-    background-color: var(--madison-gray) !important;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 0 12px rgba(0,0,0,0.4);
-}
-
-/* ====== FILE UPLOADER ====== */
-[data-testid="stFileUploader"] {
-    border: 2px dashed var(--madison-red);
-    border-radius: 12px;
-    background-color: #2b2b2b;
-    color: white;
-}
-
-[data-testid="stFileUploader"] label {
+/* General app background (dark gray overlay) */
+[data-testid="stAppViewContainer"] {
+    background: #2b2b2b !important;
     color: white !important;
 }
 
-/* ====== BUTTONS ====== */
-.stButton button {
-    background: var(--madison-red);
-    color: var(--madison-white);
-    border-radius: 8px;
-    font-weight: 600;
-    border: 1px solid black;
-    transition: all 0.3s ease;
-    padding: 0.6rem 1.4rem;
+/* Sidebar styling — darker red gradient */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #7a0000 0%, #520000 100%) !important;
+    border-right: 3px solid black;
 }
 
-.stButton button:hover {
-    background: var(--madison-black);
-    color: var(--madison-white);
+/* Sidebar text — white with black border */
+[data-testid="stSidebar"] * {
+    color: white !important;
+    text-shadow: 
+        -1px -1px 0 black,  
+         1px -1px 0 black,
+        -1px  1px 0 black,
+         1px  1px 0 black !important;
+}
+
+/* Sidebar buttons */
+[data-testid="stSidebar"] button {
+    background-color: #ff4b4b !important;
+    border: 2px solid black !important;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+[data-testid="stSidebar"] button:hover {
+    background-color: #ff6666 !important;
     transform: translateY(-2px);
 }
 
-/* ====== TABS ====== */
-.stTabs [data-baseweb="tab-list"] {
-    border-bottom: 2px solid var(--madison-red);
-    gap: 8px;
-}
-
-.stTabs [data-baseweb="tab"] {
-    background-color: #2b2b2b;
-    color: var(--madison-white);
-    border-radius: 8px 8px 0 0;
-    padding: 10px 20px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.stTabs [data-baseweb="tab"]:hover {
-    background-color: var(--madison-red);
-    color: white;
-}
-
-.stTabs [data-baseweb="tab"][aria-selected="true"] {
-    background-color: var(--madison-red);
-    color: white;
-}
-
-/* ====== METRICS ====== */
-[data-testid="stMetricValue"] {
-    color: var(--madison-white) !important;
-    font-size: 1.6rem;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #dddddd !important;
-}
-
-/* ====== CHAT ====== */
-.stChatMessage {
-    background-color: #2c2c2c;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    margin-bottom: 0.8rem;
-}
-
-.stChatInput {
-    background-color: #2c2c2c;
-    border-radius: 20px;
-    border: 1px solid var(--madison-red);
-}
-
-/* ====== EXPANDERS ====== */
+/* Sidebar expanders (dropdown tabs) */
 .streamlit-expanderHeader {
-    background-color: var(--madison-dark-red);
-    color: var(--madison-white);
+    background: #8b0000 !important;
+    color: white !important;
+    border: 2px solid black !important;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: bold;
+}
+.streamlit-expanderContent {
+    background: #660000 !important;
+    color: white !important;
+    border: 1px solid black !important;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
 }
 
-/* ====== TABLES & DATAFRAMES ====== */
-.dataframe {
-    background-color: #1E1E1E !important;
-    border-radius: 10px;
-    border: 1px solid var(--madison-light-gray);
-    color: white;
-}
-
-/* ====== PROGRESS BAR ====== */
-.stProgress > div > div {
-    background-color: var(--madison-red);
+/* Sidebar toggle button always visible */
+[data-testid="collapsedControl"] {
+    position: fixed !important;
+    top: 1rem !important;
+    left: 1rem !important;
+    z-index: 9999 !important;
+    background-color: #7a0000 !important;
+    border: 2px solid black !important;
     border-radius: 8px;
+    box-shadow: 0 0 6px black;
+}
+[data-testid="collapsedControl"]:hover {
+    background-color: #ff4b4b !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
+# Example sidebar layout
+with st.sidebar:
+    st.title("Control Panel")
+    st.write("Use the options below to interact with the app.")
+
+    with st.expander("📊 Data Settings", expanded=False):
+        st.checkbox("Show raw data")
+        st.checkbox("Normalize values")
+
+    with st.expander("⚙️ Model Options", expanded=False):
+        st.radio("Select model:", ["Linear", "Tree", "Neural Net"])
+        st.slider("Learning rate", 0.01, 1.0, 0.1)
+
+    with st.expander("📁 Upload Section", expanded=False):
+        st.file_uploader("Upload your dataset", type=["csv", "xlsx"])
+
+st.write("### Main Page")
+st.write("This is your dark grey interface with a custom dark red sidebar.")
 
 
 # Session state initialization
