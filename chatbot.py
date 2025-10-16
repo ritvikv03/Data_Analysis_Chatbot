@@ -25,134 +25,172 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    /* ===============================
+       CRIMSON DARK MODE THEME
+       =============================== */
+
+    :root {
+        --primary-color: #ff6b6b;       /* Main accent red */
+        --primary-dark: #ff4b4b;        /* Darker shade for gradient */
+        --sidebar-bg: #ff6b6b;          /* Sidebar background */
+        --main-bg: #2b2b2b;             /* Main page dark grey */
+        --widget-bg: #3a3a3a;           /* Widget background */
+        --text-color: #ffffff;          /* White text */
+        --muted-text: #d3d3d3;          /* Muted grey text */
+        --hover-bg: #444444;            /* Hover effect on dark */
+    }
+
     /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Better spacing and max width */
+    #MainMenu, footer {visibility: hidden;}
+    header {visibility: visible;}  /* Keep header for sidebar button */
+
+    /* Ensure sidebar toggle (hamburger) is always visible */
+    [data-testid="collapsedControl"] {
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        top: 1rem !important;
+        left: 1rem !important;
+        z-index: 9999 !important;
+        background: var(--widget-bg) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    /* Main container */
     .block-container {
+        background-color: var(--main-bg);
+        color: var(--text-color);
         padding-top: 2rem;
         padding-bottom: 2rem;
         max-width: 1400px;
     }
-    
-    /* Prettier chat messages */
+
+    /* Markdown and text */
+    .stMarkdown, .stText, .stTextInput, .stSelectbox {
+        color: var(--text-color) !important;
+    }
+
+    /* Chat messages */
     .stChatMessage {
+        background-color: var(--widget-bg) !important;
+        color: var(--text-color) !important;
         padding: 1.2rem;
         border-radius: 12px;
         margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    
-    /* Better chat input */
+
+    /* Chat input */
     .stChatInput {
         border-radius: 25px;
-        border: 2px solid #e0e0e0;
+        border: 2px solid #555;
+        background-color: var(--widget-bg);
+        color: var(--text-color);
     }
-    
-    /* Prettier buttons */
+
+    /* Buttons */
     .stButton button {
         border-radius: 10px;
         font-weight: 500;
-        transition: all 0.3s ease;
         border: none;
         padding: 0.6rem 1.5rem;
+        transition: all 0.3s ease;
+        background-color: var(--primary-color) !important;
+        color: var(--text-color) !important;
     }
-    
+
     .stButton button:hover {
+        background-color: var(--primary-dark) !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
     }
-    
-    /* Better file uploader */
+
+    /* File uploader */
     [data-testid="stFileUploader"] {
-        border: 2px dashed #4CAF50;
+        border: 2px dashed var(--primary-color);
         border-radius: 15px;
         padding: 25px;
-        background: #f8f9fa;
+        background: var(--widget-bg) !important;
+        color: var(--text-color) !important;
     }
-    
-    /* Nicer tabs */
+
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
     }
-    
+
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px 10px 0 0;
         padding: 10px 20px;
         font-weight: 500;
+        background-color: var(--hover-bg);
+        color: var(--text-color);
     }
-    
-    /* Better metrics */
+
+    /* Metrics */
     [data-testid="stMetricValue"] {
         font-size: 2rem;
         font-weight: 700;
+        color: var(--primary-color) !important;
     }
-    
-    /* Prettier dataframes */
+
+    /* Dataframes */
     .dataframe {
         border-radius: 10px;
         overflow: hidden;
+        background-color: var(--widget-bg);
+        color: var(--text-color);
     }
-    
-    /* Success/Info/Warning boxes */
+
+    /* Info boxes */
     .stSuccess, .stInfo, .stWarning {
         border-radius: 10px;
         padding: 1rem;
+        background-color: var(--widget-bg) !important;
+        color: var(--text-color) !important;
     }
-    
-    /* Better expanders */
+
+    /* Expanders */
     .streamlit-expanderHeader {
         font-weight: 600;
         font-size: 1.1rem;
         border-radius: 8px;
+        background-color: var(--widget-bg) !important;
+        color: var(--text-color) !important;
     }
-    
+
     /* Progress bar */
     .stProgress > div > div {
         border-radius: 10px;
+        background-color: var(--primary-color) !important;
     }
-    
-    /* Sidebar styling */
+
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+        background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--primary-dark) 100%) !important;
+        color: var(--text-color) !important;
     }
-    
-    /* Sidebar text colors */
+
     [data-testid="stSidebar"] * {
-        color: #262730 !important;
+        color: var(--text-color) !important;
     }
-    
-    /* Sidebar headers */
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] h4 {
-        color: #0e1117 !important;
-    }
-    
-    /* Sidebar markdown text */
-    [data-testid="stSidebar"] .stMarkdown {
-        color: #31333F !important;
-    }
-    
-    /* Sidebar buttons */
+
     [data-testid="stSidebar"] button {
-        background-color: #667eea !important;
-        color: white !important;
+        background-color: var(--text-color) !important;
+        color: var(--primary-dark) !important;
+        border-radius: 8px;
+        border: none;
     }
-    
-    /* Sidebar metrics */
-    [data-testid="stSidebar"] [data-testid="stMetricValue"] {
-        color: #0e1117 !important;
+
+    [data-testid="stSidebar"] button:hover {
+        background-color: #ffeaea !important;
+        color: var(--primary-color) !important;
     }
-    
-    [data-testid="stSidebar"] [data-testid="stMetricLabel"] {
-        color: #31333F !important;
-    }
+
 </style>
 """, unsafe_allow_html=True)
+
 
 st.title("Data Analytics Chatbot 🤖")
 st.markdown("AI-Assistant to help simplify complex topics about data! Upload lecture notes, datasets, or statistical analysis documents to get simplified insights, practice problems, and implementation tips!")
