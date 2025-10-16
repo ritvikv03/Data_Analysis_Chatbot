@@ -4,6 +4,29 @@ An interactive **Streamlit app** that helps you simplify and understand complex 
 You can upload lecture notes, datasets (CSV, Excel), PDFs, or Word documents — and the chatbot will provide simplified explanations, insights, and practice examples powered by **Google Gemini AI**.
 
 ---
+## Quick Start
+
+1. Visit: [(https://data-analytics-chatbot-rv.streamlit.app/)]
+2. Get FREE Gemini API key: https://aistudio.google.com/app/apikey
+3. Paste key in the app
+4. Start learning!
+
+---
+
+## Cost
+
+**FREE!** Google's Gemini offers:
+- 1,500 requests per day
+- No credit card required
+- Perfect for students
+
+---
+
+## Security
+
+Your API key is stored only in your browser session and never saved.
+
+---
 
 ## Features
 
