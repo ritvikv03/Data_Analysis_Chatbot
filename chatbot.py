@@ -9,6 +9,7 @@ from docx import Document
 import numpy as np
 import io
 
+
 st.set_page_config(page_title="Data Analytics Helper", layout="wide")
 
 st.title("Data Analytics Chatbot 🤖")
@@ -16,7 +17,10 @@ st.markdown("AI-Assistant to help simplify complex topics about data! Upload lec
 
 # Session state initialization
 def get_gemini_api_key():
-    return st.session_state.get("gemini_api_key", "")
+    try:
+        return st.secrets["gemini"]["api_key"]
+    except:
+        return st.session_state.get("gemini_api_key", "")
 
 def set_gemini_api_key(api_key):
     st.session_state["gemini_api_key"] = api_key
