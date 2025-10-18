@@ -241,7 +241,8 @@ def generate_ml_stats_analysis(content, file_type, stats_analysis=None):
 4. **PRACTICE QUESTIONS** (12 questions): Conceptual, mathematical, and application-based problems.
 5. **IMPLEMENTATION TIPS**: Python code patterns, best practices, and debugging advice."""
 
-    prompt = f"""You are a world-class Machine Learning and Statistics professor. Analyze this {prompt_type} and provide expert guidance.
+    prompt = f"""You are a world-class Business Analytics, Machine Learning and Statistics professor with an IQ of 160. 
+    Analyze this {prompt_type} and provide expert guidance. Explain {prompt_type} like you are teaching a packed auditorium. 
 
 Content to analyze (limited to first 20k characters for context window):
 {content[:20000]}
