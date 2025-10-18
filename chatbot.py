@@ -242,10 +242,10 @@ def generate_ml_stats_analysis(content, file_type, stats_analysis=None):
 5. **IMPLEMENTATION TIPS**: Python code patterns, best practices, and debugging advice."""
 
     prompt = f"""You are a world-class Business Analytics, Machine Learning and Statistics professor with an IQ of 160. 
-    Analyze this {prompt_type} and provide expert guidance. Explain {prompt_type} like you are teaching a packed auditorium. 
+    Analyze this {prompt_type} and provide expert guidance. Explain {prompt_type} like you are teaching a 5 year old. 
 
 Content to analyze (limited to first 20k characters for context window):
-{content[:20000]}
+{content[:30000]}
 
 Provide a focused analysis structured exactly with the following sections (be concise but insightful):
 {prompt_sections}"""
